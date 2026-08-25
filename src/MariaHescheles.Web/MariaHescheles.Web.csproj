@@ -19,6 +19,16 @@
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
 
     <!--
+      IL2110/IL2111 fire inside generated Razor code for framework components we only use
+      declaratively: Router.NotFoundPage and LayoutView.Layout take Type parameters annotated
+      with [DynamicallyAccessedMembers], which the Blazor renderer then sets reflectively.
+      There is no expression we can write in App.razor that avoids it, and the framework
+      guarantees those types are rooted. Suppressed so the analyzer stays useful for the code
+      we can actually control.
+    -->
+    <NoWarn>$(NoWarn);IL2110;IL2111</NoWarn>
+
+    <!--
       Deliberately NOT set here:
 
         InvariantTimezone   Drops the tz database (~130 KB) but relinks the native runtime,

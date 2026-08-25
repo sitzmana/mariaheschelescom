@@ -94,6 +94,8 @@ internal sealed class MotionInterop(IJSRuntime jsRuntime, NavigationManager navi
 
     protected override async ValueTask DisposeCoreAsync()
     {
+        await base.DisposeCoreAsync().ConfigureAwait(false);
+
         try
         {
             var module = await GetModuleAsync().ConfigureAwait(false);

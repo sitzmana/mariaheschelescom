@@ -68,11 +68,11 @@ else
 }
 
 @code {
-    private IReadOnlyList<Collection>? _collections;
+    private IReadOnlyList<StudioCollection>? _collections;
     private IReadOnlyList<string> _disciplines = [];
     private string? _active;
 
-    private IReadOnlyList<Collection> Visible => _active is null
+    private IReadOnlyList<StudioCollection> Visible => _active is null
         ? _collections ?? []
         : [.. (_collections ?? []).Where(c => string.Equals(c.Discipline, _active, StringComparison.OrdinalIgnoreCase))];
 

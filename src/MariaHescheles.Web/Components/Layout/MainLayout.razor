@@ -13,7 +13,9 @@
     parameter and simply render nothing site-specific until it arrives.
 *@
 
-<CascadingValue TValue="SiteContent?" Value="_site">
+@* TValue is inferred from _site. Writing TValue="SiteContent?" instead puts a nullable
+   annotation into generated Razor code, which has no #nullable context and errors (CS8669). *@
+<CascadingValue Value="_site">
 
     @* First tab stop on every page. Visually hidden until focused. *@
     <a class="skip-link" href="#main-content">Skip to content</a>

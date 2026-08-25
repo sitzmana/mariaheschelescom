@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace MariaHescheles.Web.Content;
 
 /// <summary>
@@ -16,7 +18,15 @@ namespace MariaHescheles.Web.Content;
 /// the gallery and the lightbox — so a new discipline costs a JSON file, not new components.
 /// </para>
 /// </remarks>
-public sealed record Collection
+[SuppressMessage(
+    "Naming",
+    "CA1711:Identifiers should not have incorrect suffix",
+    Justification = "\"Collection\" is the term a designer uses for a body of related work, and " +
+                    "it is the word on the page and in collections.json. The rule reserves the " +
+                    "suffix for types implementing ICollection, which is a general API-design " +
+                    "concern that does not apply to a content model. The Studio prefix already " +
+                    "removes any ambiguity with System.Collections at a glance.")]
+public sealed record StudioCollection
 {
     /// <summary>URL segment: <c>"vessels"</c> resolves to <c>/studio/vessels</c>.</summary>
     public required string Slug { get; init; }
@@ -58,7 +68,7 @@ public sealed record Collection
 }
 
 /// <summary>
-/// A single object within a <see cref="Collection"/>.
+/// A single object within a <see cref="StudioCollection"/>.
 /// </summary>
 public sealed record Piece
 {

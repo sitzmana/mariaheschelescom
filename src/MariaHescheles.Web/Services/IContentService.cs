@@ -51,13 +51,13 @@ public interface IContentService
     /// Loads every collection of non-interiors work — ceramics, furniture, textiles — in
     /// display order.
     /// </summary>
-    Task<IReadOnlyList<Collection>> GetCollectionsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<StudioCollection>> GetCollectionsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Loads the collections marked <c>featured</c>, in display order.</summary>
-    Task<IReadOnlyList<Collection>> GetFeaturedCollectionsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<StudioCollection>> GetFeaturedCollectionsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Finds a collection by slug, or <see langword="null"/> when no such collection exists.</summary>
-    Task<Collection?> GetCollectionAsync(string slug, CancellationToken cancellationToken = default);
+    Task<StudioCollection?> GetCollectionAsync(string slug, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Returns the distinct disciplines across all collections, in display order, for the

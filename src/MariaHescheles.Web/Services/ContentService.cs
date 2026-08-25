@@ -24,7 +24,7 @@ internal sealed class ContentService : IContentService
 
     private readonly AsyncCache<SiteContent> _site;
     private readonly AsyncCache<IReadOnlyList<Project>> _projects;
-    private readonly AsyncCache<IReadOnlyList<Collection>> _collections;
+    private readonly AsyncCache<IReadOnlyList<StudioCollection>> _collections;
     private readonly AsyncCache<AboutContent> _about;
 
     public ContentService(HttpClient http)
@@ -44,9 +44,9 @@ internal sealed class ContentService : IContentService
                                .ThenBy(static p => p.Title, StringComparer.Ordinal)];
         });
 
-        _collections = new AsyncCache<IReadOnlyList<Collection>>(async () =>
+        _collections = new AsyncCache<IReadOnlyList<StudioCollection>>(async () =>
         {
-            var collections = await LoadAsync(http, CollectionsPath, ContentJsonContext.Default.IReadOnlyListCollection)
+            var collections = await LoadAsync(http, CollectionsPath, ContentJsonContext.Default.IReadOnlyListStudioCollection)
                 .ConfigureAwait(false);
 
             return [.. collections.OrderBy(static c => c.DisplayOrder)
@@ -112,16 +112,16 @@ internal sealed class ContentService : IContentService
         return [.. projects.Select(static p => p.Category).Distinct(StringComparer.OrdinalIgnoreCase)];
     }
 
-    public Task<IReadOnlyList<Collection>> GetCollectionsAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<StudioCollection>> GetCollectionsAsync(CancellationToken cancellationToken = default)
         => _collections.GetAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<Collection>> GetFeaturedCollectionsAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<StudioCollection>> GetFeaturedCollectionsAsync(CancellationToken cancellationToken = default)
     {
         var collections = await GetCollectionsAsync(cancellationToken).ConfigureAwait(false);
         return [.. collections.Where(static c => c.Featured)];
     }
 
-    public async Task<Collection?> GetCollectionAsync(string slug, CancellationToken cancellationToken = default)
+    public async Task<StudioCollection?> GetCollectionAsync(string slug, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(slug);
 

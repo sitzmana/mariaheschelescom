@@ -17,11 +17,20 @@
 
   <PropertyGroup Label="Code quality">
     <!--
-      Warnings are defects, but a red build is a poor first experience for a designer
-      pulling the repo to change a photo. Locally warnings stay warnings; in CI they
-      fail the build, so nothing merges with a warning in it.
+      Unconditional, so a local build and a CI build agree. Making this CI-only seemed kinder
+      but was worse: it let warnings through locally and turned every push into the first
+      place anyone found out, which is the slowest possible feedback loop.
     -->
-    <TreatWarningsAsErrors Condition="'$(GITHUB_ACTIONS)' == 'true'">true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!--
+      NU1900 means NuGet could not reach the vulnerability database. That is infrastructure,
+      not code: it fires on any network-restricted or offline machine and must never fail a
+      build. It stays visible as a warning. Actual advisories are NU1901-NU1904 and are
+      deliberately left as errors.
+    -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1900</WarningsNotAsErrors>
+
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
