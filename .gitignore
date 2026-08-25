@@ -28,6 +28,11 @@ project.lock.json
 project.fragment.lock.json
 artifacts/
 
+# Local publish output. The deploy workflow writes here, and so does the publish command in
+# the README, so it is easy to commit ~12 MB of build output by accident.
+publish/
+[Pp]ublish/
+
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
 
