@@ -1,0 +1,133 @@
+@implements IAsyncDisposable
+
+@inject DocumentInterop Document
+
+@*
+    Site header.
+
+    Two behaviours worth knowing about:
+
+    1. The condensed state is driven entirely by CSS. `motion.js` sets `data-scrolled` on
+       <html>, so scrolling never triggers a Blazor render.
+    2. The mobile menu is a native <dialog>. Using the platform element rather than a styled
+       <div> gives focus trapping, Escape-to-close, inert background content and top-layer
+       stacking for free — all of which are easy to get subtly wrong by hand.
+*@
+
+<header class="site-header">
+    <div class="site-header__inner">
+
+        <a class="wordmark" href="" aria-label="@($"{Name}, home")">
+            <span class="wordmark__name">@Name</span>
+            <span class="wordmark__role">@Role</span>
+        </a>
+
+        <nav class="site-nav" aria-label="Primary">
+            <ul class="site-nav__list">
+                @foreach (var link in Links)
+                {
+                    <li>
+                        <NavLink class="site-nav__link" href="@link.Href" Match="MatchFor(link.Href)">
+                            <span class="site-nav__label">@link.Label</span>
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        </nav>
+
+        <div class="site-header__actions">
+            <ThemeToggle />
+            <button type="button"
+                    class="menu-button"
+                    aria-haspopup="dialog"
+                    aria-expanded="@_menuOpen.ToString().ToLowerInvariant()"
+                    @onclick="OpenMenuAsync">
+                <span class="menu-button__bars" aria-hidden="true"></span>
+                <span class="visually-hidden">Open menu</span>
+            </button>
+        </div>
+
+    </div>
+</header>
+
+<dialog @ref="_menu" class="nav-overlay" aria-label="Site menu">
+    <div class="nav-overlay__inner">
+        <button type="button" class="nav-overlay__close" @onclick="CloseMenuAsync">
+            <span aria-hidden="true">&times;</span>
+            <span class="visually-hidden">Close menu</span>
+        </button>
+
+        <ul class="nav-overlay__list">
+            @foreach (var (link, index) in Links.Select((l, i) => (l, i)))
+            {
+                <li style="--stagger:@index">
+                    <a class="nav-overlay__link" href="@link.Href" @onclick="CloseMenuAsync">@link.Label</a>
+                </li>
+            }
+        </ul>
+
+        @if (Site is { Social.Count: > 0 })
+        {
+            <ul class="nav-overlay__social">
+                @foreach (var social in Site.Social)
+                {
+                    <li>
+                        <a href="@social.Url" rel="noopener noreferrer" target="_blank">@social.Label</a>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</dialog>
+
+@code {
+    [CascadingParameter]
+    private SiteContent? Site { get; set; }
+
+    private ElementReference _menu;
+    private DotNetObjectReference<SiteHeader>? _selfReference;
+    private bool _menuOpen;
+
+    private string Name => Site?.Name ?? "Maria Hescheles";
+
+    private string Role => Site?.Role ?? "Interior Design";
+
+    private IReadOnlyList<NavigationLink> Links => Site?.Navigation ?? DefaultLinks;
+
+    // Used until site.json arrives, and as the fallback if it ever fails to load.
+    private static readonly NavigationLink[] DefaultLinks =
+    [
+        new() { Label = "Work", Href = "work" },
+        new() { Label = "Studio", Href = "studio" },
+        new() { Label = "About", Href = "about" },
+        new() { Label = "Contact", Href = "contact" },
+    ];
+
+    // "" is the home route and would otherwise prefix-match every URL on the site.
+    private static NavLinkMatch MatchFor(string href)
+        => string.IsNullOrEmpty(href) || href == "/" ? NavLinkMatch.All : NavLinkMatch.Prefix;
+
+    private async Task OpenMenuAsync()
+    {
+        _selfReference ??= DotNetObjectReference.Create(this);
+        _menuOpen = true;
+        await Document.OpenDialogAsync(_menu, _selfReference);
+    }
+
+    private Task CloseMenuAsync() => Document.CloseDialogAsync(_menu).AsTask();
+
+    /// <summary>Invoked from JavaScript for every dismissal path, including the Escape key.</summary>
+    [JSInvokable]
+    public Task OnDialogClosed()
+    {
+        _menuOpen = false;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _selfReference?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

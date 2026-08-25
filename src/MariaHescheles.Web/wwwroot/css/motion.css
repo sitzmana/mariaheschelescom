@@ -1,0 +1,200 @@
+/*
+    Motion.
+
+    The whole system rests on two primitives:
+
+      .reveal      an entrance animation, triggered once by IntersectionObserver adding
+                   `is-revealed`. No JavaScript touches the styles themselves.
+
+      --progress   a 0-to-1 scroll position published onto an element by motion.js. Because
+                   custom properties inherit, any descendant can key an effect off it purely
+                   in CSS. Nothing re-renders; the browser interpolates.
+
+    Everything scroll-driven on the site is one of those two, or a composition of both.
+*/
+
+/* -------------------------------------------------------------------------
+   Reveal
+   ------------------------------------------------------------------------- */
+
+.reveal {
+    /* Hints that only opacity and transform will change, so the browser can promote the
+       element once rather than re-rasterising it every frame. `will-change` is dropped
+       again after the reveal so it does not permanently consume a compositor layer. */
+    will-change: opacity, transform;
+    transition:
+        opacity var(--duration-reveal) var(--ease-out-expo) var(--reveal-delay, 0ms),
+        transform var(--duration-reveal) var(--ease-out-expo) var(--reveal-delay, 0ms),
+        clip-path var(--duration-reveal) var(--ease-out-expo) var(--reveal-delay, 0ms);
+}
+
+.reveal.is-revealed {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0);
+    will-change: auto;
+}
+
+.reveal--rise {
+    opacity: 0;
+    transform: translate3d(0, 2.5rem, 0);
+}
+
+.reveal--fade {
+    opacity: 0;
+}
+
+.reveal--scale {
+    opacity: 0;
+    /* Barely perceptible. A larger scale reads as a zoom effect rather than as arrival. */
+    transform: scale(1.04);
+}
+
+.reveal--slide {
+    opacity: 0;
+    transform: translate3d(-1.5rem, 0, 0);
+}
+
+/* Wipes upward behind a mask instead of moving the element, which lets a display heading
+   appear to be uncovered rather than to fly in. */
+.reveal--mask {
+    clip-path: inset(0 0 100% 0);
+    opacity: 1;
+}
+
+/* -------------------------------------------------------------------------
+   Parallax
+   ------------------------------------------------------------------------- */
+
+.parallax {
+    overflow: clip;
+    /* The inner element is oversized and then drifts within this window, so the frame
+       is never left with an empty band at either end of its travel. */
+    position: relative;
+}
+
+.parallax__inner {
+    height: calc(100% + var(--parallax-depth, 0.1) * 100%);
+    transform: translate3d(0, calc((var(--progress, 0.5) - 0.5) * var(--parallax-depth, 0.1) * -100%), 0);
+    will-change: transform;
+}
+
+.parallax__inner > .media,
+.parallax__inner > .media .media__frame {
+    height: 100%;
+}
+
+.parallax__inner img {
+    height: 100%;
+    object-fit: cover;
+}
+
+/* -------------------------------------------------------------------------
+   Pinned scroll scenes
+   ------------------------------------------------------------------------- */
+
+.pinned {
+    /* One viewport for the visible stage, plus `--pinned-length` more to scroll through
+       while it is stuck. `svh` rather than `vh` so mobile browser chrome collapsing does
+       not resize the scene mid-scroll. */
+    height: calc((1 + var(--pinned-length, 2)) * 100svh);
+    position: relative;
+}
+
+.pinned__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow: clip;
+}
+
+/* -------------------------------------------------------------------------
+   The home page statement
+   The one deliberately theatrical moment on the site: three lines that hand off to
+   each other as the section scrolls, each fading and drifting on its own slice of
+   the progress range.
+   ------------------------------------------------------------------------- */
+
+.statement__stage {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding-inline: var(--gutter);
+}
+
+.statement__line {
+    grid-area: 1 / 1;
+    max-width: 22ch;
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-tight);
+    text-wrap: balance;
+    will-change: opacity, transform;
+}
+
+/*
+    Each line owns a third of the scroll. `--local` remaps the section's global 0-to-1
+    progress onto that slice; the opacity curve then peaks in the middle of it.
+
+    The arithmetic is deliberately kept in CSS rather than computed in JavaScript: it means
+    the timing can be retuned by a designer editing this file, with no rebuild.
+*/
+.statement__line--1 {
+    --local: calc(var(--progress, 0) * 3);
+}
+
+.statement__line--2 {
+    --local: calc((var(--progress, 0) - 0.333) * 3);
+}
+
+.statement__line--3 {
+    --local: calc((var(--progress, 0) - 0.666) * 3);
+}
+
+.statement__line {
+    /* Triangular envelope: 0 at the edges of the slice, 1 at its centre. */
+    opacity: clamp(0, calc(1 - abs(var(--local, 0) * 2 - 1) * 1.6), 1);
+    transform: translate3d(0, calc((0.5 - var(--local, 0)) * 3rem), 0);
+}
+
+/* abs() is recent. Where it is unsupported the lines simply cross-fade on opacity
+   without the vertical drift, which still reads correctly. */
+@supports not (width: abs(1px)) {
+    .statement__line {
+        transform: none;
+    }
+}
+
+/* -------------------------------------------------------------------------
+   Page reading progress, drawn under the header
+   ------------------------------------------------------------------------- */
+
+.site-header::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 2px;
+    background-color: var(--accent);
+    transform: scaleX(var(--page-progress, 0));
+    transform-origin: left center;
+    opacity: 0;
+    transition: opacity var(--duration-base) var(--ease-out-quart);
+}
+
+[data-scrolled='true'] .site-header::after {
+    opacity: 1;
+}
+
+/* -------------------------------------------------------------------------
+   Staggering
+   Elements rendered with `--stagger: n` arrive in sequence. Capped so a long list
+   does not leave the last item waiting several seconds.
+   ------------------------------------------------------------------------- */
+
+[style*='--stagger'] {
+    --stagger-delay: calc(min(var(--stagger, 0), 8) * 60ms);
+}

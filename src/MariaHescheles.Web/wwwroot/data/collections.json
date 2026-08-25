@@ -1,0 +1,146 @@
+[
+  {
+    "//": "PLACEHOLDER CONTENT. Every string describes what belongs in it. Replace the values, keep the keys. A collection is a body of work outside interior design — ceramics, furniture, textiles. Add a new one by copying an entry and changing the slug.",
+
+    "slug": "collection-one",
+    "title": "Collection title",
+    "subtitle": "Subtitle — one line about the body of work",
+    "discipline": "Ceramics",
+    "summary": "Summary — one or two sentences. Shown on the studio index and used as the social share description.",
+    "statement": [
+      "Statement paragraph. What the work is, how it is made, what it is after.",
+      "Second paragraph — optional."
+    ],
+    "year": 2025,
+    "displayOrder": 10,
+    "featured": true,
+    "accent": "#7d6a55",
+
+    "cover": {
+      "src": "media/studio/collection-one/cover.jpg",
+      "alt": "Alt text — describe what the photograph actually shows.",
+      "width": 2400,
+      "height": 1600,
+      "placeholder": "#c8bda9"
+    },
+
+    "pieces": [
+      {
+        "//": "A piece with a photograph only. Clicking it opens the lightbox.",
+        "title": "Piece title",
+        "year": 2025,
+        "materials": "Materials — body, glaze and firing",
+        "dimensions": "H × W × D",
+        "description": "Description — optional note about the piece.",
+        "image": {
+          "src": "media/studio/collection-one/piece-01.jpg",
+          "alt": "Alt text.",
+          "width": 1600,
+          "height": 2000,
+          "placeholder": "#cfc3ad"
+        }
+      },
+      {
+        "//": "A piece with a 3D model. The viewer replaces the photograph, but downloads nothing until the visitor presses 'View in 3D'. Objects are where 3D earns its keep — a photograph fixes one viewpoint, and the point of a thrown vessel is its profile in the round.",
+        "title": "Piece title",
+        "year": 2025,
+        "materials": "Materials",
+        "dimensions": "H × W × D",
+        "image": {
+          "src": "media/studio/collection-one/piece-02.jpg",
+          "alt": "Alt text.",
+          "width": 1600,
+          "height": 2000,
+          "placeholder": "#c2b7a2"
+        },
+        "scene": {
+          "modelUrl": "models/example.glb",
+          "alt": "Alt text — the only description a screen reader gets, since a canvas has no readable content.",
+          "cameraDistance": 2.2,
+          "cameraAzimuth": 30,
+          "cameraElevation": 10,
+          "fieldOfView": 32,
+          "autoRotate": true,
+          "groundShadow": true,
+          "poster": {
+            "src": "media/studio/collection-one/piece-02.jpg",
+            "alt": "Alt text for the still shown before the model loads.",
+            "width": 1600,
+            "height": 2000,
+            "placeholder": "#c2b7a2"
+          }
+        }
+      },
+      {
+        "title": "Piece title",
+        "year": 2024,
+        "materials": "Materials",
+        "dimensions": "H × W × D",
+        "image": {
+          "src": "media/studio/collection-one/piece-03.jpg",
+          "alt": "Alt text.",
+          "width": 1600,
+          "height": 2000,
+          "placeholder": "#bdb0a0"
+        }
+      }
+    ],
+
+    "metadata": {
+      "description": "Meta description — 120 to 160 characters.",
+      "imageUrl": "media/studio/collection-one/cover.jpg"
+    }
+  },
+
+  {
+    "//": "A second collection in a different discipline. Adding a discipline here makes a new filter appear on /studio automatically — no code change.",
+
+    "slug": "collection-two",
+    "title": "Collection title",
+    "subtitle": "Subtitle",
+    "discipline": "Furniture",
+    "summary": "Summary — one or two sentences.",
+    "statement": ["Statement paragraph."],
+    "year": 2024,
+    "displayOrder": 20,
+    "featured": true,
+    "accent": "#6f6656",
+
+    "cover": {
+      "src": "media/studio/collection-two/cover.jpg",
+      "alt": "Alt text.",
+      "width": 2400,
+      "height": 1600,
+      "placeholder": "#b3a894"
+    },
+
+    "pieces": [
+      {
+        "title": "Piece title",
+        "year": 2024,
+        "materials": "Materials",
+        "dimensions": "H × W × D",
+        "image": {
+          "src": "media/studio/collection-two/piece-01.jpg",
+          "alt": "Alt text.",
+          "width": 2000,
+          "height": 1500,
+          "placeholder": "#b3a894"
+        }
+      },
+      {
+        "title": "Piece title",
+        "year": 2024,
+        "materials": "Materials",
+        "dimensions": "H × W × D",
+        "image": {
+          "src": "media/studio/collection-two/piece-02.jpg",
+          "alt": "Alt text.",
+          "width": 2000,
+          "height": 1500,
+          "placeholder": "#a89c88"
+        }
+      }
+    ]
+  }
+]

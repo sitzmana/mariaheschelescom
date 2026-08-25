@@ -1,0 +1,143 @@
+/*
+    Design tokens.
+
+    Every colour, size, duration and easing curve in the site resolves to something declared
+    in this file. Nothing downstream is allowed to invent a value: if a component needs a
+    colour that is not here, the right fix is to add a token, not a hex code.
+
+    That constraint is what makes a coherent redesign possible later. Changing the accent
+    across the entire site is one line here.
+*/
+
+:root {
+    color-scheme: light;
+
+    /* ---------------------------------------------------------------------
+       Colour — light
+       A warm, paper-like neutral scale. Pure white reads as clinical and, more
+       practically, competes with the photography; interiors sit better on bone.
+       --------------------------------------------------------------------- */
+    --color-canvas: #faf8f4;
+    --color-surface: #f2eee6;
+    --color-surface-raised: #ffffff;
+    --color-ink: #1a1917;
+    --color-ink-muted: #6b665d;
+    --color-ink-faint: #9c968a;
+    --color-line: #e3ddd1;
+    --color-line-strong: #cfc7b7;
+
+    /* Terracotta. Used sparingly: focus rings, hover states, one or two accents
+       per page. Individual projects override it with a colour from their own palette. */
+    --accent: #9c6b4f;
+    --accent-contrast: #ffffff;
+
+    --color-backdrop: rgb(26 25 23 / 0.72);
+    --shadow-soft: 0 1px 2px rgb(26 25 23 / 0.04), 0 8px 24px rgb(26 25 23 / 0.06);
+    --shadow-lifted: 0 2px 4px rgb(26 25 23 / 0.05), 0 24px 60px rgb(26 25 23 / 0.12);
+
+    /* ---------------------------------------------------------------------
+       Typography
+       Display serif for headings, grotesque for everything else. Both stacks fall
+       back to high-quality system faces, so the site is fully typeset even before
+       (or without) the web fonts — see docs/design-system.md on self-hosting them.
+       --------------------------------------------------------------------- */
+    --font-display: 'Fraunces', 'Iowan Old Style', 'Palatino Linotype', 'Georgia', serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+    /* Fluid type scale. Each step interpolates between its mobile and desktop size
+       across the viewport range, so there are no jarring jumps at breakpoints.
+       Ratio is roughly 1.25 on mobile widening to 1.333 on desktop. */
+    --text-xs: clamp(0.75rem, 0.73rem + 0.1vw, 0.8125rem);
+    --text-sm: clamp(0.875rem, 0.85rem + 0.12vw, 0.9375rem);
+    --text-base: clamp(1rem, 0.97rem + 0.15vw, 1.0625rem);
+    --text-md: clamp(1.125rem, 1.06rem + 0.32vw, 1.3125rem);
+    --text-lg: clamp(1.375rem, 1.24rem + 0.66vw, 1.875rem);
+    --text-xl: clamp(1.75rem, 1.47rem + 1.4vw, 2.75rem);
+    --text-2xl: clamp(2.25rem, 1.72rem + 2.65vw, 4.25rem);
+    --text-3xl: clamp(2.75rem, 1.75rem + 5vw, 6.5rem);
+
+    --leading-tight: 1.05;
+    --leading-snug: 1.2;
+    --leading-normal: 1.6;
+    --leading-relaxed: 1.75;
+
+    --tracking-tight: -0.02em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.08em;
+    --tracking-widest: 0.18em;
+
+    /* ---------------------------------------------------------------------
+       Space — a 4px-derived scale. Consistent rhythm matters more than any
+       individual value being perfect.
+       --------------------------------------------------------------------- */
+    --space-3xs: 0.25rem;
+    --space-2xs: 0.5rem;
+    --space-xs: 0.75rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2.5rem;
+    --space-xl: 4rem;
+    --space-2xl: 6rem;
+    --space-3xl: clamp(5rem, 3rem + 10vw, 11rem);
+
+    /* ---------------------------------------------------------------------
+       Layout
+       --------------------------------------------------------------------- */
+    --measure: 34rem;          /* ~68 characters: the comfortable reading width */
+    --width-content: 72rem;
+    --width-wide: 90rem;
+    --gutter: clamp(1.25rem, 0.6rem + 3vw, 4rem);
+    --header-height: 4.5rem;
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 10px;
+    --radius-pill: 999px;
+
+    /* ---------------------------------------------------------------------
+       Motion
+       One easing curve does almost all the work. `--ease-out-expo` decelerates
+       hard, which is what makes an element feel like it arrived somewhere rather
+       than merely stopped.
+       --------------------------------------------------------------------- */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+    --duration-fast: 160ms;
+    --duration-base: 320ms;
+    --duration-slow: 720ms;
+    --duration-reveal: 900ms;
+
+    /* Written by motion.js. Declared here so the fallbacks are meaningful before
+       the first frame and if JavaScript never runs at all. */
+    --progress: 0;
+    --page-progress: 0;
+    --scrollbar-width: 0px;
+}
+
+/*
+    Dark theme.
+
+    Not an inversion. Warm near-blacks and slightly desaturated ink keep the photography
+    looking like photography; a true-black scheme makes interior shots look like they were
+    taken at night. The accent lifts in luminance to hold its contrast ratio.
+*/
+[data-theme='dark'] {
+    color-scheme: dark;
+
+    --color-canvas: #121110;
+    --color-surface: #1b1917;
+    --color-surface-raised: #24211e;
+    --color-ink: #f2eee6;
+    --color-ink-muted: #a19a8d;
+    --color-ink-faint: #6e675d;
+    --color-line: #2e2a26;
+    --color-line-strong: #443e37;
+
+    --accent: #d59a72;
+    --accent-contrast: #1a1917;
+
+    --color-backdrop: rgb(8 7 7 / 0.82);
+    --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.36);
+    --shadow-lifted: 0 2px 4px rgb(0 0 0 / 0.36), 0 24px 60px rgb(0 0 0 / 0.5);
+}

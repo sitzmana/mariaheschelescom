@@ -1,0 +1,69 @@
+@page "/contact"
+
+@*
+    Contact.
+
+    Deliberately not a form. A static site has no server to post to, and wiring one up would
+    mean introducing a third-party form service — another dependency, another privacy policy,
+    another thing that can quietly stop delivering mail. A plain mail link is more reliable.
+
+    If a form is wanted later, see docs/deployment.md for the Azure Static Web Apps managed
+    functions route, which keeps everything inside one resource.
+*@
+
+<PageHead Title="Contact"
+          Description="How to get in touch with Maria Hescheles." />
+
+<section class="contact">
+
+    <SectionHeading Level="1"
+                    Eyebrow="Contact"
+                    Title="Get in touch"
+                    Lead="Everything arrives at the same address." />
+
+    <Reveal Variant="RevealVariant.Rise" Delay="120" Class="contact__details">
+        @if (!string.IsNullOrWhiteSpace(Site?.Email))
+        {
+            <a class="contact__primary" href="@($"mailto:{Site.Email}")">@Site.Email</a>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Site?.Phone))
+        {
+            <a class="contact__secondary" href="@($"tel:{Site.Phone.Replace(" ", string.Empty, StringComparison.Ordinal)}")">
+                @Site.Phone
+            </a>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Site?.Location))
+        {
+            <p class="contact__location">@Site.Location</p>
+        }
+    </Reveal>
+
+    @if (Site is { Social.Count: > 0 })
+    {
+        <Reveal Variant="RevealVariant.Fade" Delay="220" Class="contact__social">
+            <p class="contact__social-label">Elsewhere</p>
+            <ul>
+                @foreach (var link in Site.Social)
+                {
+                    <li>
+                        <a href="@link.Url" rel="noopener noreferrer" target="_blank">@link.Label</a>
+                    </li>
+                }
+            </ul>
+        </Reveal>
+    }
+
+    <Reveal Variant="RevealVariant.Fade" Delay="320" Class="contact__note">
+        <p>
+            Note — replace this with whatever is useful to say to someone about to write.
+        </p>
+    </Reveal>
+
+</section>
+
+@code {
+    [CascadingParameter]
+    private SiteContent? Site { get; set; }
+}

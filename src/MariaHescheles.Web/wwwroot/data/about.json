@@ -1,0 +1,62 @@
+{
+  "//": "PLACEHOLDER CONTENT. Every string describes what belongs in it. Replace the values, keep the keys.",
+
+  "headline": "Headline — one sentence, set at display size. The opening statement of the page.",
+
+  "biography": [
+    "Biography paragraph. One entry per paragraph.",
+    "Second paragraph.",
+    "Third paragraph — optional."
+  ],
+
+  "portrait": {
+    "//": "Optional. Delete this whole object to run the page without a portrait.",
+    "src": "media/about/portrait.jpg",
+    "alt": "Alt text — describe what the photograph actually shows.",
+    "width": 1600,
+    "height": 2000,
+    "placeholder": "#d8cfc2"
+  },
+
+  "principles": [
+    {
+      "//": "Optional section. Delete the whole 'principles' array to remove it from the page.",
+      "title": "Principle title",
+      "description": "Principle description — a sentence or two."
+    },
+    {
+      "title": "Principle title",
+      "description": "Principle description."
+    },
+    {
+      "title": "Principle title",
+      "description": "Principle description."
+    }
+  ],
+
+  "timeline": [
+    {
+      "//": "Optional section. Period is free text so ranges read naturally.",
+      "period": "2019 — present",
+      "title": "Role or milestone",
+      "organisation": "Organisation",
+      "detail": "Detail — optional."
+    },
+    {
+      "period": "2015 — 2019",
+      "title": "Role or milestone",
+      "organisation": "Organisation"
+    },
+    {
+      "period": "2015",
+      "title": "Qualification",
+      "organisation": "Institution"
+    }
+  ],
+
+  "metadata": {
+    "title": "About",
+    "description": "Meta description — 120 to 160 characters.",
+    "imageUrl": "media/social/about.jpg"
+  }
+}

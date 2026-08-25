@@ -1,0 +1,125 @@
+@implements IAsyncDisposable
+
+@inject DocumentInterop Document
+
+@*
+    Full-screen image viewer.
+
+    Built on the native <dialog> element so the platform provides focus trapping, Escape to
+    dismiss, background inertness and correct stacking. Arrow keys move between images; the
+    counter and labels keep screen reader users oriented.
+
+    Open it from a parent via the Show(index) method:
+
+        <Lightbox @ref="_lightbox" Images="@block.Images" />
+        ...
+        <button @onclick="() => _lightbox.ShowAsync(i)">
+*@
+
+<dialog @ref="_dialog" class="lightbox" aria-label="Image viewer" @onkeydown="OnKeyDown">
+    @if (Current is not null)
+    {
+        <div class="lightbox__stage">
+            <img class="lightbox__img"
+                 src="@Current.Src"
+                 srcset="@Current.SrcSet"
+                 sizes="100vw"
+                 alt="@Current.Alt"
+                 decoding="async" />
+        </div>
+
+        <div class="lightbox__bar">
+            <p class="lightbox__caption">
+                @Current.Caption
+                @if (Current.Credit is not null)
+                {
+                    <span class="media__credit">@Current.Credit</span>
+                }
+            </p>
+            <p class="lightbox__counter" aria-live="polite">@(_index + 1) of @Images.Count</p>
+        </div>
+
+        @if (Images.Count > 1)
+        {
+            <button type="button" class="lightbox__nav lightbox__nav--prev" @onclick="PreviousAsync">
+                <span aria-hidden="true">&#8592;</span>
+                <span class="visually-hidden">Previous image</span>
+            </button>
+            <button type="button" class="lightbox__nav lightbox__nav--next" @onclick="NextAsync">
+                <span aria-hidden="true">&#8594;</span>
+                <span class="visually-hidden">Next image</span>
+            </button>
+        }
+
+        <button type="button" class="lightbox__close" @onclick="CloseAsync">
+            <span aria-hidden="true">&times;</span>
+            <span class="visually-hidden">Close viewer</span>
+        </button>
+    }
+</dialog>
+
+@code {
+    private ElementReference _dialog;
+    private DotNetObjectReference<Lightbox>? _selfReference;
+    private int _index;
+
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<MediaAsset> Images { get; set; }
+
+    private MediaAsset? Current => _index >= 0 && _index < Images.Count ? Images[_index] : null;
+
+    /// <summary>Opens the viewer at the given index.</summary>
+    public async Task ShowAsync(int index)
+    {
+        if (Images.Count == 0)
+        {
+            return;
+        }
+
+        _index = Math.Clamp(index, 0, Images.Count - 1);
+        StateHasChanged();
+
+        _selfReference ??= DotNetObjectReference.Create(this);
+        await Document.OpenDialogAsync(_dialog, _selfReference);
+    }
+
+    private Task CloseAsync() => Document.CloseDialogAsync(_dialog).AsTask();
+
+    // Wraps around, so the gallery never dead-ends on an arrow press.
+    private Task NextAsync() => MoveAsync(1);
+
+    private Task PreviousAsync() => MoveAsync(-1);
+
+    private Task MoveAsync(int delta)
+    {
+        if (Images.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        _index = (_index + delta + Images.Count) % Images.Count;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnKeyDown(KeyboardEventArgs args) => args.Key switch
+    {
+        "ArrowRight" => NextAsync(),
+        "ArrowLeft" => PreviousAsync(),
+        _ => Task.CompletedTask,
+    };
+
+    /// <summary>Invoked from JavaScript for every dismissal path, including the Escape key.</summary>
+    [JSInvokable]
+    public Task OnDialogClosed()
+    {
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _selfReference?.Dispose();
+        return ValueTask.CompletedTask;
+    }
+}

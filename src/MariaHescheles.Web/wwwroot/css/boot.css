@@ -1,0 +1,106 @@
+/*
+    Boot screen and runtime error UI.
+
+    Kept in its own file because it is the only CSS that has to look right before the
+    application exists. Everything here is deliberately independent of component styles.
+*/
+
+.boot {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: var(--space-md);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    /* Fades out as the app renders over it, so the handover is a dissolve rather than a cut. */
+    animation: boot-in var(--duration-slow) var(--ease-out-quart);
+}
+
+@keyframes boot-in {
+    from { opacity: 0; }
+}
+
+.boot__mark {
+    display: flex;
+    gap: 0.05em;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    letter-spacing: var(--tracking-tight);
+}
+
+.boot__initial {
+    animation: boot-letter 2.4s var(--ease-in-out) infinite;
+}
+
+.boot__initial:last-child {
+    animation-delay: 200ms;
+}
+
+@keyframes boot-letter {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 1; }
+}
+
+/*
+    Determinate progress.
+
+    Blazor publishes the download fraction as `--blazor-load-percentage`, which a conic
+    gradient turns into a ring. Real progress rather than an indefinite spinner is the
+    difference between a site that is loading and one that looks stuck.
+*/
+.boot__ring {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background:
+        conic-gradient(var(--accent) var(--blazor-load-percentage, 0%), var(--color-line) 0);
+    /* Punches out the middle to leave a ring rather than a pie. */
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+    transition: background var(--duration-fast) linear;
+}
+
+.boot__label {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+}
+
+.boot__label::after {
+    content: var(--blazor-load-percentage-text, '');
+    margin-left: 0.4em;
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+    Shown by the Blazor runtime only when start-up or a circuit fails outright.
+    Hidden by default; the framework sets `display: block` on it.
+*/
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1000;
+    padding: var(--space-sm) var(--gutter);
+    background-color: var(--color-ink);
+    color: var(--color-canvas);
+    box-shadow: var(--shadow-lifted);
+    font-size: var(--text-sm);
+}
+
+#blazor-error-ui .reload {
+    margin-left: var(--space-sm);
+    color: inherit;
+}
+
+#blazor-error-ui .dismiss {
+    position: absolute;
+    top: var(--space-2xs);
+    right: var(--gutter);
+    color: inherit;
+    font-size: var(--text-md);
+    line-height: 1;
+}

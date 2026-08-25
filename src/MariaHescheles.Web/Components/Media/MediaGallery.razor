@@ -1,0 +1,50 @@
+@*
+    A set of photographs with a shared lightbox.
+
+    The layout is chosen per block by the person writing the content, because only they know
+    whether two images are a pair or a sequence. All four layouts collapse to a single column
+    on narrow viewports.
+*@
+
+<div class="@GalleryClass">
+    @for (var i = 0; i < Images.Count; i++)
+    {
+        var index = i;
+        var image = Images[i];
+
+        <Reveal Variant="RevealVariant.Rise" Delay="@(index * 70)" Class="gallery__cell">
+            <button type="button"
+                    class="gallery__trigger"
+                    @onclick="() => OpenAsync(index)"
+                    aria-label="@($"Open image {index + 1} of {Images.Count} full screen")">
+                <ResponsiveImage Asset="@image" ShowCaption="false" Sizes="@CellSizes" />
+            </button>
+        </Reveal>
+    }
+</div>
+
+<Lightbox @ref="_lightbox" Images="@Images" />
+
+@code {
+    private Lightbox? _lightbox;
+
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<MediaAsset> Images { get; set; }
+
+    [Parameter]
+    public GalleryLayout Layout { get; set; } = GalleryLayout.Mosaic;
+
+    private string GalleryClass => $"gallery gallery--{Layout.ToString().ToLowerInvariant()}";
+
+    // Tells the browser how wide each cell renders so it can pick the right srcset entry.
+    // Guessing high wastes bandwidth; guessing low produces soft images on retina displays.
+    private string CellSizes => Layout switch
+    {
+        GalleryLayout.Pair => "(max-width: 48rem) 100vw, 45vw",
+        GalleryLayout.Triptych => "(max-width: 48rem) 100vw, 30vw",
+        GalleryLayout.Filmstrip => "(max-width: 48rem) 82vw, 40vw",
+        _ => "(max-width: 48rem) 100vw, 46vw",
+    };
+
+    private Task OpenAsync(int index) => _lightbox?.ShowAsync(index) ?? Task.CompletedTask;
+}

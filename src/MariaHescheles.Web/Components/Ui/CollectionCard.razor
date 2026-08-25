@@ -1,0 +1,50 @@
+@*
+    A collection's entry on the studio index.
+
+    Deliberately close to ProjectCard but not shared with it: the metadata line differs
+    (discipline and piece count rather than category and location), and merging them would
+    mean a component with two modes and a flag, which is harder to read than two short files.
+*@
+
+<a class="project-card" href="@($"studio/{Collection.Slug}")" style="@AccentStyle">
+    <div class="project-card__media">
+        <ResponsiveImage Asset="@Collection.Cover"
+                         ShowCaption="false"
+                         Priority="@Priority"
+                         Sizes="(max-width: 48rem) 92vw, (max-width: 80rem) 46vw, 32vw" />
+    </div>
+
+    <div class="project-card__body">
+        <h3 class="project-card__title">@Collection.Title</h3>
+
+        @if (Collection.Subtitle is not null)
+        {
+            <p class="project-card__subtitle">@Collection.Subtitle</p>
+        }
+
+        <p class="project-card__meta">
+            <span>@Collection.Discipline</span>
+            @if (Collection.Pieces.Count > 0)
+            {
+                <span class="project-card__dot" aria-hidden="true">&middot;</span>
+                <span>@Collection.Pieces.Count @(Collection.Pieces.Count == 1 ? "piece" : "pieces")</span>
+            }
+            @if (Collection.Year > 0)
+            {
+                <span class="project-card__dot" aria-hidden="true">&middot;</span>
+                <span>@Collection.Year</span>
+            }
+        </p>
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public required Collection Collection { get; set; }
+
+    /// <summary>Set on the first card only, which is usually the page's LCP element.</summary>
+    [Parameter]
+    public bool Priority { get; set; }
+
+    private string? AccentStyle => Collection.Accent is null ? null : $"--accent:{Collection.Accent}";
+}

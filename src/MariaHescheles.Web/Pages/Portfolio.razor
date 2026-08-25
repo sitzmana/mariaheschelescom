@@ -1,0 +1,94 @@
+@page "/work"
+
+@inject IContentService Content
+
+@*
+    Portfolio index.
+
+    The filter is derived from the project data rather than hard-coded, so adding a category
+    to projects.json makes a new filter appear with no code change. Filtering is client-side
+    over an already-loaded list, so it is instantaneous and needs no loading state.
+*@
+
+<PageHead Title="Work"
+          Description="Selected interior design projects — residential, hospitality and commercial."
+          Image="media/social/work.jpg" />
+
+<SectionHeading Level="1"
+                Eyebrow="Portfolio"
+                Title="Work"
+                Lead="Complete projects, documented room by room."
+                Class="page-heading" />
+
+@if (_projects is null)
+{
+    <LoadingSkeleton Rows="4" />
+}
+else
+{
+    @if (_categories.Count > 1)
+    {
+        <nav class="filters" aria-label="Filter projects by category">
+            <button type="button"
+                    class="@FilterClass(null)"
+                    aria-pressed="@((_active is null).ToString().ToLowerInvariant())"
+                    @onclick="() => SetFilter(null)">
+                All
+            </button>
+
+            @foreach (var category in _categories)
+            {
+                var value = category;
+                <button type="button"
+                        class="@FilterClass(value)"
+                        aria-pressed="@((_active == value).ToString().ToLowerInvariant())"
+                        @onclick="() => SetFilter(value)">
+                    @value
+                </button>
+            }
+        </nav>
+    }
+
+    <p class="visually-hidden" role="status">
+        Showing @Visible.Count of @_projects.Count projects.
+    </p>
+
+    @if (Visible.Count == 0)
+    {
+        <p class="empty-state">No projects in this category yet.</p>
+    }
+    else
+    {
+        @* Keyed on slug so filtering reorders the existing DOM nodes instead of rebuilding
+           them, which keeps images loaded and lets the CSS transition handle the reflow. *@
+        <div class="project-grid project-grid--index">
+            @foreach (var (project, index) in Visible.Select((p, i) => (p, i)))
+            {
+                <div class="project-grid__cell" @key="project.Slug" style="@($"--stagger:{index}")">
+                    <ProjectCard Project="@project" Priority="@(index == 0)" />
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    private IReadOnlyList<Project>? _projects;
+    private IReadOnlyList<string> _categories = [];
+    private string? _active;
+
+    private IReadOnlyList<Project> Visible => _active is null
+        ? _projects ?? []
+        : [.. (_projects ?? []).Where(p => string.Equals(p.Category, _active, StringComparison.OrdinalIgnoreCase))];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _projects = await Content.GetProjectsAsync();
+        _categories = await Content.GetCategoriesAsync();
+    }
+
+    private void SetFilter(string? category) => _active = category;
+
+    private string FilterClass(string? category)
+        => _active == category ? "filters__item is-active" : "filters__item";
+}

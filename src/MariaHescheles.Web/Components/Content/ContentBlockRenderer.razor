@@ -1,0 +1,131 @@
+@*
+    Dispatches an authored content block to the component that renders it.
+
+    This switch is the only place in the application that knows the full set of block types.
+    Adding a block type means adding a record in Content/ContentBlock.cs, a discriminator on
+    the [JsonDerivedType] list, and one case here. Nothing else changes.
+*@
+
+<div class="block @WidthClass" id="@Block.Anchor">
+    @switch (Block)
+    {
+        case ProseBlock prose:
+            <Reveal Variant="RevealVariant.Rise">
+                <div class="prose">
+                    @if (prose.Eyebrow is not null)
+                    {
+                        <p class="prose__eyebrow">@prose.Eyebrow</p>
+                    }
+                    @if (prose.Heading is not null)
+                    {
+                        <h2 class="prose__heading">@prose.Heading</h2>
+                    }
+                    @foreach (var paragraph in prose.Paragraphs)
+                    {
+                        <p class="prose__paragraph">@paragraph</p>
+                    }
+                </div>
+            </Reveal>
+            break;
+
+        case ImageBlock image when image.Parallax > 0:
+            <Reveal Variant="RevealVariant.Scale">
+                <Parallax Depth="@image.Parallax">
+                    <ResponsiveImage Asset="@image.Image" Sizes="@SizesFor(image.Width)" />
+                </Parallax>
+            </Reveal>
+            break;
+
+        case ImageBlock image:
+            <Reveal Variant="RevealVariant.Scale">
+                <ResponsiveImage Asset="@image.Image" Sizes="@SizesFor(image.Width)" />
+            </Reveal>
+            break;
+
+        case GalleryBlock gallery:
+            <MediaGallery Images="@gallery.Images" Layout="@gallery.Layout" />
+            break;
+
+        case QuoteBlock quote:
+            <Reveal Variant="RevealVariant.Mask">
+                <blockquote class="pull-quote">
+                    <p class="pull-quote__text">@quote.Text</p>
+                    @if (quote.Attribution is not null)
+                    {
+                        <footer class="pull-quote__attribution">@quote.Attribution</footer>
+                    }
+                </blockquote>
+            </Reveal>
+            break;
+
+        case SpecificationsBlock specs:
+            <Reveal Variant="RevealVariant.Rise">
+                <div class="specs">
+                    @if (specs.Heading is not null)
+                    {
+                        <h2 class="specs__heading">@specs.Heading</h2>
+                    }
+                    <dl class="specs__list">
+                        @foreach (var item in specs.Items)
+                        {
+                            <div class="specs__row">
+                                <dt class="specs__label">@item.Label</dt>
+                                <dd class="specs__value">@item.Value</dd>
+                            </div>
+                        }
+                    </dl>
+                </div>
+            </Reveal>
+            break;
+
+        case ComparisonBlock comparison:
+            <Reveal Variant="RevealVariant.Rise">
+                <ImageComparison Before="@comparison.Before"
+                                 After="@comparison.After"
+                                 BeforeLabel="@comparison.BeforeLabel"
+                                 AfterLabel="@comparison.AfterLabel" />
+            </Reveal>
+            break;
+
+        case SceneBlock scene:
+            <Reveal Variant="RevealVariant.Rise">
+                <div class="scene-block">
+                    @if (scene.Heading is not null)
+                    {
+                        <h2 class="scene-block__heading">@scene.Heading</h2>
+                    }
+                    @if (scene.Description is not null)
+                    {
+                        <p class="scene-block__description">@scene.Description</p>
+                    }
+                    <ModelViewer Scene="@scene.Scene" />
+                </div>
+            </Reveal>
+            break;
+
+        default:
+            @* Unknown discriminator in the JSON. Rendering nothing beats rendering an error. *@
+            break;
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public required ContentBlock Block { get; set; }
+
+    private string WidthClass => Block switch
+    {
+        ImageBlock image => $"block--{image.Width.ToString().ToLowerInvariant()}",
+        GalleryBlock gallery => $"block--{gallery.Width.ToString().ToLowerInvariant()}",
+        ComparisonBlock comparison => $"block--{comparison.Width.ToString().ToLowerInvariant()}",
+        SceneBlock scene => $"block--{scene.Width.ToString().ToLowerInvariant()}",
+        _ => "block--inset",
+    };
+
+    private static string SizesFor(MediaWidth width) => width switch
+    {
+        MediaWidth.Full => "100vw",
+        MediaWidth.Wide => "(max-width: 60rem) 100vw, 82vw",
+        _ => "(max-width: 60rem) 100vw, 56rem",
+    };
+}

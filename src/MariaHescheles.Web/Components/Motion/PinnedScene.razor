@@ -1,0 +1,87 @@
+@implements IAsyncDisposable
+
+@inject MotionInterop Motion
+
+@*
+    A pinned, scroll-scrubbed section — the mechanism behind Apple-style product sequences.
+
+    Structure:
+      .pinned        a tall track, `--pinned-length` viewport heights high
+      .pinned__stage a `position: sticky` child that fills the viewport and stays put while
+                     the track scrolls past
+
+    While the track is on screen its `--progress` custom property runs 0 → 1. Custom
+    properties inherit, so any descendant can drive an effect straight from it in CSS:
+
+        .headline { opacity: calc(1 - var(--progress) * 2); }
+        .plan     { transform: rotateX(calc(var(--progress) * 40deg)); }
+
+    Nothing here re-renders on scroll; the browser interpolates the values itself.
+
+    Usage:
+        <PinnedScene Length="2.5">
+            <div class="my-sequence"> ... </div>
+        </PinnedScene>
+*@
+
+<section @ref="_element"
+         class="@($"pinned {Class}".TrimEnd())"
+         style="@($"--pinned-length:{Length.ToString("0.##", CultureInfo.InvariantCulture)}")"
+         aria-label="@AriaLabel">
+    <div class="pinned__stage">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    private ElementReference _element;
+    private bool _registered;
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// How long the section stays pinned, measured in viewport heights <em>beyond</em> the first.
+    /// <c>1</c> means one full screen of scrolling; <c>3</c> starts to feel like a hostage
+    /// situation. Two is usually right.
+    /// </summary>
+    [Parameter]
+    public double Length { get; set; } = 2;
+
+    /// <summary>
+    /// Accessible name for the section. Pinned sections are visually distinct but structurally
+    /// invisible, so naming them keeps the landmark list meaningful.
+    /// </summary>
+    [Parameter]
+    public string? AriaLabel { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _registered)
+        {
+            return;
+        }
+
+        _registered = true;
+        await Motion.TrackProgressAsync(_element, ProgressMode.Contain);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!_registered)
+        {
+            return;
+        }
+
+        try
+        {
+            await Motion.ReleaseAsync(_element);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+}

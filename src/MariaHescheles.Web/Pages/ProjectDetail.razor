@@ -1,0 +1,137 @@
+@page "/work/{Slug}"
+
+@inject IContentService Content
+
+@*
+    A single case study.
+
+    The page re-resolves whenever the route parameter changes, which is what makes the
+    previous/next links at the foot work without a full navigation.
+*@
+
+@if (_state == LoadState.Loading)
+{
+    <LoadingSkeleton Rows="5" />
+}
+else if (_project is null)
+{
+    <NotFoundContent />
+}
+else
+{
+    <PageHead Title="@_project.Title"
+              Description="@_project.Summary"
+              Image="@_project.Cover.Src"
+              ImageAlt="@_project.Cover.Alt"
+              OpenGraphType="article"
+              StructuredData="@_structuredData" />
+
+    <article class="case-study" style="@AccentStyle">
+
+        <header class="case-study__header">
+            <Reveal Variant="RevealVariant.Fade">
+                <p class="case-study__eyebrow">
+                    <span>@_project.Category</span>
+                    @if (_project.Year > 0)
+                    {
+                        <span class="case-study__dot" aria-hidden="true">&middot;</span>
+                        <span>@_project.Year</span>
+                    }
+                </p>
+            </Reveal>
+
+            <Reveal Variant="RevealVariant.Mask" Delay="80">
+                <h1 class="case-study__title">@_project.Title</h1>
+            </Reveal>
+
+            @if (_project.Subtitle is not null)
+            {
+                <Reveal Variant="RevealVariant.Fade" Delay="180">
+                    <p class="case-study__subtitle">@_project.Subtitle</p>
+                </Reveal>
+            }
+
+            @if (_project.Services.Count > 0)
+            {
+                <Reveal Variant="RevealVariant.Slide" Delay="260">
+                    <ul class="tag-list">
+                        @foreach (var service in _project.Services)
+                        {
+                            <li class="tag">@service</li>
+                        }
+                    </ul>
+                </Reveal>
+            }
+        </header>
+
+        <div class="case-study__cover">
+            <Parallax Depth="0.08">
+                <ResponsiveImage Asset="@_project.Cover" Priority="true" Sizes="100vw" />
+            </Parallax>
+        </div>
+
+        <div class="case-study__body">
+            @foreach (var (block, index) in _project.Blocks.Select((b, i) => (b, i)))
+            {
+                <ContentBlockRenderer Block="@block" @key="index" />
+            }
+        </div>
+
+        <nav class="case-study__pager" aria-label="Other projects">
+            @if (_neighbours.Previous is { } previous)
+            {
+                <a class="pager__link pager__link--prev" href="@($"work/{previous.Slug}")">
+                    <span class="pager__label">Previous</span>
+                    <span class="pager__title">@previous.Title</span>
+                </a>
+            }
+
+            @if (_neighbours.Next is { } next)
+            {
+                <a class="pager__link pager__link--next" href="@($"work/{next.Slug}")">
+                    <span class="pager__label">Next</span>
+                    <span class="pager__title">@next.Title</span>
+                </a>
+            }
+        </nav>
+
+    </article>
+}
+
+@code {
+    private enum LoadState { Loading, Loaded }
+
+    private LoadState _state = LoadState.Loading;
+    private Project? _project;
+    private ProjectNeighbours _neighbours;
+    private string? _structuredData;
+
+    /// <summary>The URL segment identifying the project.</summary>
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    private SiteContent? Site { get; set; }
+
+    private string? AccentStyle => _project?.Accent is null ? null : $"--accent:{_project.Accent}";
+
+    // Runs again on every parameter change, so navigating between adjacent case studies
+    // reloads the content without a full page navigation.
+    protected override async Task OnParametersSetAsync()
+    {
+        _state = LoadState.Loading;
+
+        _project = await Content.GetProjectAsync(Slug);
+        _neighbours = await Content.GetNeighboursAsync(Slug);
+
+        // The layout normally supplies this; falling back to a direct load keeps the page
+        // correct if it is ever hosted outside MainLayout.
+        var site = Site ?? await Content.GetSiteAsync();
+
+        _structuredData = _project is not null
+            ? StructuredDataBuilder.Project(_project, site)
+            : null;
+
+        _state = LoadState.Loaded;
+    }
+}

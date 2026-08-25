@@ -1,0 +1,254 @@
+[
+  {
+    "//": "PLACEHOLDER CONTENT. Every string below describes what belongs in it. Replace the values, keep the keys. Full field reference: docs/content-authoring.md",
+
+    "slug": "project-one",
+    "title": "Project title",
+    "subtitle": "Subtitle — one line placing the project, e.g. the building and what changed",
+    "summary": "Summary — one or two sentences. Shown on the work index and used as the social share description, so it has to read well on its own.",
+    "year": 2025,
+    "location": "City, State",
+    "category": "Residential",
+    "services": [
+      "Service or scope item",
+      "Service or scope item",
+      "Service or scope item"
+    ],
+    "featured": true,
+    "displayOrder": 10,
+    "accent": "#8a7b5c",
+
+    "cover": {
+      "//": "Paths are relative to wwwroot and must NOT start with a slash. width/height are the real pixel dimensions of the file — they reserve the space so the page never jumps while loading. placeholder is a colour sampled from the photo, painted in that reserved space.",
+      "src": "media/projects/project-one/cover.jpg",
+      "alt": "Alt text — describe what the photograph actually shows.",
+      "width": 2400,
+      "height": 1600,
+      "placeholder": "#cfc6b4",
+      "srcSet": "media/projects/project-one/cover-800.jpg 800w, media/projects/project-one/cover-1600.jpg 1600w, media/projects/project-one/cover.jpg 2400w"
+    },
+
+    "blocks": [
+      {
+        "$type": "prose",
+        "//": "PROSE — headed body copy. The workhorse block.",
+        "eyebrow": "Eyebrow",
+        "heading": "Section heading",
+        "paragraphs": [
+          "Paragraph. One entry per paragraph; plain text only, no markup.",
+          "Second paragraph."
+        ]
+      },
+      {
+        "$type": "image",
+        "//": "IMAGE — width is Inset | Wide | Full. parallax is the drift depth; 0 disables it and 0.1 is a sensible ceiling.",
+        "width": "Full",
+        "parallax": 0.1,
+        "image": {
+          "src": "media/projects/project-one/image-01.jpg",
+          "alt": "Alt text.",
+          "width": 2400,
+          "height": 1350,
+          "placeholder": "#c9c1b0"
+        }
+      },
+      {
+        "$type": "gallery",
+        "//": "GALLERY — layout is Mosaic | Pair | Triptych | Filmstrip. Clicking any image opens the lightbox.",
+        "layout": "Mosaic",
+        "width": "Wide",
+        "images": [
+          {
+            "src": "media/projects/project-one/gallery-01.jpg",
+            "alt": "Alt text.",
+            "width": 2000,
+            "height": 1500,
+            "placeholder": "#d2c9b7",
+            "caption": "Caption — optional."
+          },
+          {
+            "src": "media/projects/project-one/gallery-02.jpg",
+            "alt": "Alt text.",
+            "width": 1400,
+            "height": 1900,
+            "placeholder": "#c4bba9"
+          },
+          {
+            "src": "media/projects/project-one/gallery-03.jpg",
+            "alt": "Alt text.",
+            "width": 1400,
+            "height": 1900,
+            "placeholder": "#cdc5b6"
+          }
+        ]
+      },
+      {
+        "$type": "quote",
+        "//": "QUOTE — a pull quote.",
+        "text": "Quote text.",
+        "attribution": "Attribution"
+      },
+      {
+        "$type": "comparison",
+        "//": "COMPARISON — draggable before/after slider. Both images must share an aspect ratio.",
+        "width": "Wide",
+        "beforeLabel": "Before",
+        "afterLabel": "After",
+        "before": {
+          "src": "media/projects/project-one/before.jpg",
+          "alt": "Alt text describing the room before the work.",
+          "width": 2000,
+          "height": 1333,
+          "placeholder": "#8f877a"
+        },
+        "after": {
+          "src": "media/projects/project-one/after.jpg",
+          "alt": "Alt text describing the same view after the work.",
+          "width": 2000,
+          "height": 1333,
+          "placeholder": "#d2c9b7"
+        }
+      },
+      {
+        "$type": "scene",
+        "//": "SCENE — an interactive 3D model. Nothing 3D is downloaded until the visitor presses 'View in 3D'. Export .glb; see docs/motion-and-3d.md.",
+        "width": "Wide",
+        "heading": "Scene heading",
+        "description": "Description — one line about the object.",
+        "anchor": "model",
+        "scene": {
+          "modelUrl": "models/example.glb",
+          "alt": "Alt text — the only description a screen reader gets, since a canvas has no readable content.",
+          "cameraDistance": 2.4,
+          "cameraAzimuth": 40,
+          "cameraElevation": 14,
+          "fieldOfView": 32,
+          "autoRotate": true,
+          "groundShadow": true,
+          "poster": {
+            "src": "media/projects/project-one/model-poster.jpg",
+            "alt": "Alt text for the still shown before the model loads.",
+            "width": 2000,
+            "height": 1500,
+            "placeholder": "#d2c9b7"
+          }
+        }
+      },
+      {
+        "$type": "specs",
+        "//": "SPECS — label/value facts.",
+        "heading": "Project facts",
+        "items": [
+          { "label": "Scope", "value": "Value" },
+          { "label": "Area", "value": "Value" },
+          { "label": "Duration", "value": "Value" },
+          { "label": "Photography", "value": "Photographer credit" }
+        ]
+      }
+    ],
+
+    "metadata": {
+      "//": "Optional. Overrides the page description and social image for this project only.",
+      "description": "Meta description — 120 to 160 characters.",
+      "imageUrl": "media/projects/project-one/cover.jpg"
+    }
+  },
+
+  {
+    "//": "A shorter project. Only slug, title, summary, category and cover are required; every other field can be omitted.",
+
+    "slug": "project-two",
+    "title": "Project title",
+    "subtitle": "Subtitle",
+    "summary": "Summary — one or two sentences.",
+    "year": 2024,
+    "location": "City, State",
+    "category": "Residential",
+    "services": ["Service or scope item", "Service or scope item"],
+    "featured": true,
+    "displayOrder": 20,
+    "accent": "#7d6a72",
+
+    "cover": {
+      "src": "media/projects/project-two/cover.jpg",
+      "alt": "Alt text.",
+      "width": 2400,
+      "height": 1600,
+      "placeholder": "#b8a9ae"
+    },
+
+    "blocks": [
+      {
+        "$type": "prose",
+        "eyebrow": "Eyebrow",
+        "heading": "Section heading",
+        "paragraphs": ["Paragraph.", "Second paragraph."]
+      },
+      {
+        "$type": "gallery",
+        "layout": "Pair",
+        "images": [
+          {
+            "src": "media/projects/project-two/gallery-01.jpg",
+            "alt": "Alt text.",
+            "width": 1600,
+            "height": 2000,
+            "placeholder": "#8e7b83"
+          },
+          {
+            "src": "media/projects/project-two/gallery-02.jpg",
+            "alt": "Alt text.",
+            "width": 1600,
+            "height": 2000,
+            "placeholder": "#c3b4b8"
+          }
+        ]
+      }
+    ]
+  },
+
+  {
+    "//": "Category is free text. Adding a new one here makes a new filter appear on /work automatically — no code change.",
+
+    "slug": "project-three",
+    "title": "Project title",
+    "subtitle": "Subtitle",
+    "summary": "Summary — one or two sentences.",
+    "year": 2024,
+    "location": "City, State",
+    "category": "Commercial",
+    "services": ["Service or scope item"],
+    "featured": true,
+    "displayOrder": 30,
+    "accent": "#8c5a44",
+
+    "cover": {
+      "src": "media/projects/project-three/cover.jpg",
+      "alt": "Alt text.",
+      "width": 2400,
+      "height": 1600,
+      "placeholder": "#7a5a48"
+    },
+
+    "blocks": [
+      {
+        "$type": "prose",
+        "eyebrow": "Eyebrow",
+        "heading": "Section heading",
+        "paragraphs": ["Paragraph."]
+      },
+      {
+        "$type": "image",
+        "width": "Wide",
+        "parallax": 0.08,
+        "image": {
+          "src": "media/projects/project-three/image-01.jpg",
+          "alt": "Alt text.",
+          "width": 2400,
+          "height": 1350,
+          "placeholder": "#6f5344"
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,125 @@
+@page "/"
+
+@inject IContentService Content
+
+@*
+    Home.
+
+    Sequence: a full-height hero, a pinned scroll-scrubbed statement, the featured work, and a
+    closing invitation. The pinned section is the one deliberately theatrical moment on the
+    site — used once, it reads as craft; used on every page, it reads as a template.
+*@
+
+<PageHead Title="@(_site?.Name ?? "Maria Hescheles")"
+          Description="@(_site?.Tagline)"
+          Image="media/social/home.jpg"
+          StructuredData="@_structuredData" />
+
+<section class="hero">
+    <div class="hero__inner">
+        <Reveal Variant="RevealVariant.Mask">
+            <h1 class="hero__title">@(_site?.Tagline ?? "Interiors with intent.")</h1>
+        </Reveal>
+
+        <Reveal Variant="RevealVariant.Fade" Delay="240">
+            <p class="hero__meta">
+                @(_site?.Name ?? "Maria Hescheles")
+                <span aria-hidden="true">&middot;</span>
+                @(_site?.Role ?? "Interior Designer")
+                @if (_site?.Location is not null)
+                {
+                    <span aria-hidden="true">&middot;</span>
+                    @_site.Location
+                }
+            </p>
+        </Reveal>
+
+        <Reveal Variant="RevealVariant.Fade" Delay="380">
+            <a class="button" href="work">See the work</a>
+        </Reveal>
+    </div>
+
+    @* Progress-driven, so it fades as the visitor starts scrolling rather than sitting there. *@
+    <div class="hero__scroll-cue" aria-hidden="true">
+        <span class="hero__scroll-line"></span>
+    </div>
+</section>
+
+<PinnedScene Length="2.4" AriaLabel="Design approach" Class="statement">
+    <div class="statement__stage">
+        <p class="statement__line statement__line--1">Every room already has an argument.</p>
+        <p class="statement__line statement__line--2">The work is learning what it is.</p>
+        <p class="statement__line statement__line--3">Then making the case beautifully.</p>
+    </div>
+</PinnedScene>
+
+<section class="home-work">
+    <SectionHeading Eyebrow="Selected work"
+                    Title="Recent projects"
+                    Lead="A few rooms worth walking through." />
+
+    @if (_featured is null)
+    {
+        <LoadingSkeleton Rows="3" />
+    }
+    else if (_featured.Count == 0)
+    {
+        <p class="empty-state">New work is being photographed. Please check back shortly.</p>
+    }
+    else
+    {
+        <div class="project-grid">
+            @for (var i = 0; i < _featured.Count; i++)
+            {
+                var index = i;
+                <Reveal Variant="RevealVariant.Rise" Delay="@(index * 90)">
+                    <ProjectCard Project="@_featured[index]" Priority="@(index == 0)" />
+                </Reveal>
+            }
+        </div>
+
+        <Reveal Variant="RevealVariant.Fade" Class="home-work__more">
+            <a class="button button--ghost" href="work">View all projects</a>
+        </Reveal>
+    }
+</section>
+
+@if (_collections is { Count: > 0 })
+{
+    <section class="home-work home-studio">
+        <SectionHeading Eyebrow="Studio"
+                        Title="Made by hand"
+                        Lead="Work that happens away from the drawings." />
+
+        <div class="project-grid">
+            @for (var i = 0; i < _collections.Count; i++)
+            {
+                var index = i;
+                <Reveal Variant="RevealVariant.Rise" Delay="@(index * 90)">
+                    <CollectionCard Collection="@_collections[index]" />
+                </Reveal>
+            }
+        </div>
+
+        <Reveal Variant="RevealVariant.Fade" Class="home-work__more">
+            <a class="button button--ghost" href="studio">View all studio work</a>
+        </Reveal>
+    </section>
+}
+
+@code {
+    private SiteContent? _site;
+    private IReadOnlyList<Project>? _featured;
+    private IReadOnlyList<Collection>? _collections;
+    private string? _structuredData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _site = await Content.GetSiteAsync();
+        _structuredData = StructuredDataBuilder.Person(_site);
+
+        // Loaded after the hero renders so the first paint is never blocked on content lists.
+        _featured = await Content.GetFeaturedProjectsAsync();
+        _collections = await Content.GetFeaturedCollectionsAsync();
+    }
+}

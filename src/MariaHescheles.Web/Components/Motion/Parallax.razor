@@ -1,0 +1,73 @@
+@implements IAsyncDisposable
+
+@inject MotionInterop Motion
+
+@*
+    Scroll-linked parallax.
+
+    The element's scroll progress is written into its own `--progress` custom property, from 0
+    as it enters the viewport to 1 as it leaves. `motion.css` turns that into a transform:
+
+        transform: translate3d(0, calc((var(--progress) - 0.5) * var(--parallax-depth) * 100%), 0);
+
+    Because the value never crosses back into .NET, the whole effect runs on the compositor.
+    Scrolling a page full of these does not re-render a single component.
+
+    Usage:
+        <Parallax Depth="0.12">
+            <ResponsiveImage Asset="@project.Cover" />
+        </Parallax>
+*@
+
+<div @ref="_element"
+     class="@($"parallax {Class}".TrimEnd())"
+     style="@($"--parallax-depth:{Depth.ToString("0.###", CultureInfo.InvariantCulture)}")">
+    <div class="parallax__inner">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    private ElementReference _element;
+    private bool _registered;
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Drift distance as a fraction of the element's height. <c>0.1</c> is a good ceiling:
+    /// beyond roughly <c>0.2</c> the effect stops reading as depth and starts reading as lag.
+    /// </summary>
+    [Parameter]
+    public double Depth { get; set; } = 0.1;
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _registered)
+        {
+            return;
+        }
+
+        _registered = true;
+        await Motion.TrackProgressAsync(_element, ProgressMode.Cover);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!_registered)
+        {
+            return;
+        }
+
+        try
+        {
+            await Motion.ReleaseAsync(_element);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+}

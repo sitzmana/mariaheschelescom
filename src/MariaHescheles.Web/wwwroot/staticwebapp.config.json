@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json.schemastore.org/staticwebapp.config.json",
+
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": [
+      "/_framework/*",
+      "/css/*",
+      "/js/*",
+      "/data/*",
+      "/media/*",
+      "/models/*",
+      "/fonts/*",
+      "/*.{png,jpg,jpeg,webp,avif,svg,ico,glb,gltf,bin,hdr,woff2,json,txt,xml,webmanifest}"
+    ]
+  },
+
+  "mimeTypes": {
+    ".glb": "model/gltf-binary",
+    ".gltf": "model/gltf+json",
+    ".bin": "application/octet-stream",
+    ".hdr": "image/vnd.radiance",
+    ".webmanifest": "application/manifest+json",
+    ".woff2": "font/woff2",
+    ".wasm": "application/wasm",
+    ".dat": "application/octet-stream"
+  },
+
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "geolocation=(), microphone=(), camera=(), interest-cohort=()",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+
+    "//": "CSP notes. 'wasm-unsafe-eval' is required: it is how the browser is permitted to compile the .NET runtime, and there is no way to run Blazor WebAssembly without it. The jsdelivr entries are three.js, loaded on demand by the 3D viewer; drop them if you vendor three.js locally. 'unsafe-inline' for style-src is needed because components set CSS custom properties through the style attribute, which is how every scroll effect on the site works.",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'none'; object-src 'none'"
+  },
+
+  "routes": [
+    {
+      "route": "/_framework/*",
+      "headers": {
+        "//": "Framework assets are content-fingerprinted by the SDK, so a stale copy can never be served for changed content.",
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/media/*",
+      "headers": { "Cache-Control": "public, max-age=2592000" }
+    },
+    {
+      "route": "/models/*",
+      "headers": { "Cache-Control": "public, max-age=2592000" }
+    },
+    {
+      "route": "/fonts/*",
+      "headers": { "Cache-Control": "public, max-age=31536000, immutable" }
+    },
+    {
+      "route": "/data/*",
+      "headers": {
+        "//": "Content JSON is edited without changing its filename, so it must revalidate.",
+        "Cache-Control": "public, max-age=0, must-revalidate"
+      }
+    },
+    {
+      "route": "/index.html",
+      "headers": { "Cache-Control": "public, max-age=0, must-revalidate" }
+    }
+  ],
+
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/index.html",
+      "statusCode": 200
+    }
+  }
+}

@@ -1,0 +1,181 @@
+@implements IAsyncDisposable
+
+@inject SceneInterop Scenes
+@inject MotionInterop Motion
+
+@*
+    Interactive 3D model viewer.
+
+    Loading strategy, in order:
+
+      1. Render the poster image only. Nothing 3D is downloaded.
+      2. When the poster scrolls into view (or the visitor activates it), import the WebGL
+         module and stream the model, showing real progress.
+      3. Swap to the live canvas once the first frame has actually rendered.
+
+    That ordering matters: three.js plus a furniture model can easily exceed the weight of the
+    entire rest of the site. A visitor who reads the case study and leaves should never pay
+    for it.
+
+    Failure is treated as a normal outcome, not an exception. Old GPUs, blocked WebGL, and
+    corporate proxies that mangle binary responses are all real. In every case the poster
+    stays on screen and the page keeps working.
+*@
+
+<div class="viewer @StateClass">
+
+    <div class="viewer__surface" @ref="_host" aria-hidden="@(_state == ViewerState.Ready ? "false" : "true")"></div>
+
+    @if (_state != ViewerState.Ready && Scene.Poster is not null)
+    {
+        <div class="viewer__poster">
+            <ResponsiveImage Asset="@Scene.Poster" ShowCaption="false" />
+        </div>
+    }
+
+    @if (_state == ViewerState.Idle)
+    {
+        <button type="button" class="viewer__activate" @onclick="LoadAsync">
+            <span class="viewer__activate-icon" aria-hidden="true"></span>
+            <span>View in 3D</span>
+        </button>
+    }
+
+    @if (_state == ViewerState.Loading)
+    {
+        <div class="viewer__progress" role="status">
+            <div class="viewer__progress-track">
+                <div class="viewer__progress-fill" style="@($"--loaded:{_progress.ToString("0.###", CultureInfo.InvariantCulture)}")"></div>
+            </div>
+            <p class="viewer__progress-label">Loading model @($"{_progress * 100:0}%")</p>
+        </div>
+    }
+
+    @if (_state == ViewerState.Failed)
+    {
+        <p class="viewer__error" role="status">
+            The 3D view could not be loaded here. The photograph above shows the same piece.
+        </p>
+    }
+
+    @if (_state == ViewerState.Ready)
+    {
+        <div class="viewer__controls">
+            <button type="button" class="viewer__control" @onclick="ResetCameraAsync">Reset view</button>
+            <button type="button" class="viewer__control" @onclick="ToggleRotationAsync">
+                @(_rotating ? "Pause rotation" : "Rotate")
+            </button>
+        </div>
+        <p class="viewer__hint" aria-hidden="true">Drag to orbit &middot; scroll to zoom</p>
+    }
+
+    @* The only description assistive technology receives: a canvas has no accessible content. *@
+    <p class="visually-hidden">@Scene.Alt</p>
+</div>
+
+@code {
+    private enum ViewerState { Idle, Loading, Ready, Failed }
+
+    private ElementReference _host;
+    private DotNetObjectReference<ModelViewer>? _selfReference;
+    private SceneViewer? _viewer;
+    private ViewerState _state = ViewerState.Idle;
+    private double _progress;
+    private bool _rotating;
+
+    [Parameter, EditorRequired]
+    public required Scene3D Scene { get; set; }
+
+    /// <summary>
+    /// Loads the model automatically when it scrolls into view, instead of waiting for the
+    /// visitor to press "View in 3D". Reserve this for a page's single hero model — automatic
+    /// loading is a several-megabyte decision made on the visitor's behalf.
+    /// </summary>
+    [Parameter]
+    public bool AutoLoad { get; set; }
+
+    private string StateClass => $"viewer--{_state.ToString().ToLowerInvariant()}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && AutoLoad)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        if (_state is ViewerState.Loading or ViewerState.Ready)
+        {
+            return;
+        }
+
+        _state = ViewerState.Loading;
+        _progress = 0;
+        StateHasChanged();
+
+        try
+        {
+            var options = Scenes.ToOptions(Scene);
+
+            // A turntable is exactly the kind of continuous motion that triggers vestibular
+            // symptoms, so the system preference overrides whatever the content asked for.
+            if (await Motion.PrefersReducedMotionAsync())
+            {
+                options = options with { AutoRotate = false };
+            }
+
+            _rotating = options.AutoRotate;
+            _selfReference ??= DotNetObjectReference.Create(this);
+            _viewer = await Scenes.CreateViewerAsync(_host, options, _selfReference);
+        }
+        catch (JSException)
+        {
+            // WebGL unavailable, model missing, or decode failure. The poster covers it.
+            _state = ViewerState.Failed;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Reports model download progress as a fraction from 0 to 1.</summary>
+    [JSInvokable]
+    public Task OnSceneProgress(double fraction)
+    {
+        _progress = Math.Clamp(fraction, 0, 1);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Called once the first frame has rendered, or with a message if loading failed.</summary>
+    [JSInvokable]
+    public Task OnSceneReady(string? error)
+    {
+        _state = error is null ? ViewerState.Ready : ViewerState.Failed;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task ResetCameraAsync() => _viewer?.ResetCameraAsync().AsTask() ?? Task.CompletedTask;
+
+    private async Task ToggleRotationAsync()
+    {
+        if (_viewer is null)
+        {
+            return;
+        }
+
+        _rotating = !_rotating;
+        await _viewer.SetAutoRotateAsync(_rotating);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_viewer is not null)
+        {
+            await _viewer.DisposeAsync();
+        }
+
+        _selfReference?.Dispose();
+    }
+}

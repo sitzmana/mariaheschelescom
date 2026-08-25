@@ -1,0 +1,110 @@
+@page "/about"
+
+@inject IContentService Content
+
+<PageHead Title="About"
+          Description="@_about?.Headline"
+          Image="media/social/about.jpg"
+          StructuredData="@_structuredData" />
+
+@if (_about is null)
+{
+    <LoadingSkeleton Rows="4" />
+}
+else
+{
+    <article class="about">
+
+        <header class="about__intro">
+            <Reveal Variant="RevealVariant.Mask">
+                <h1 class="about__headline">@_about.Headline</h1>
+            </Reveal>
+        </header>
+
+        <div class="about__lede">
+            @if (_about.Portrait is not null)
+            {
+                <Reveal Variant="RevealVariant.Scale" Class="about__portrait">
+                    <Parallax Depth="0.06">
+                        <ResponsiveImage Asset="@_about.Portrait"
+                                         Priority="true"
+                                         Sizes="(max-width: 60rem) 92vw, 38vw" />
+                    </Parallax>
+                </Reveal>
+            }
+
+            <Reveal Variant="RevealVariant.Rise" Delay="120" Class="about__biography">
+                @foreach (var paragraph in _about.Biography)
+                {
+                    <p>@paragraph</p>
+                }
+            </Reveal>
+        </div>
+
+        @if (_about.Principles.Count > 0)
+        {
+            <section class="about__principles">
+                <SectionHeading Eyebrow="Approach" Title="How the work gets made" />
+
+                <ol class="principles">
+                    @foreach (var (principle, index) in _about.Principles.Select((p, i) => (p, i)))
+                    {
+                        <Reveal Variant="RevealVariant.Rise" Delay="@(index * 90)">
+                            <li class="principles__item">
+                                <span class="principles__number" aria-hidden="true">@($"{index + 1:00}")</span>
+                                <h3 class="principles__title">@principle.Title</h3>
+                                <p class="principles__body">@principle.Description</p>
+                            </li>
+                        </Reveal>
+                    }
+                </ol>
+            </section>
+        }
+
+        @if (_about.Timeline.Count > 0)
+        {
+            <section class="about__timeline">
+                <SectionHeading Eyebrow="Background" Title="Practice" />
+
+                <ol class="timeline">
+                    @foreach (var entry in _about.Timeline)
+                    {
+                        <Reveal Variant="RevealVariant.Slide">
+                            <li class="timeline__item">
+                                <p class="timeline__period">@entry.Period</p>
+                                <div class="timeline__detail">
+                                    <h3 class="timeline__title">@entry.Title</h3>
+                                    @if (entry.Organisation is not null)
+                                    {
+                                        <p class="timeline__org">@entry.Organisation</p>
+                                    }
+                                    @if (entry.Detail is not null)
+                                    {
+                                        <p class="timeline__body">@entry.Detail</p>
+                                    }
+                                </div>
+                            </li>
+                        </Reveal>
+                    }
+                </ol>
+            </section>
+        }
+
+    </article>
+}
+
+@code {
+    private AboutContent? _about;
+    private string? _structuredData;
+
+    [CascadingParameter]
+    private SiteContent? Site { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _about = await Content.GetAboutAsync();
+
+        var site = Site ?? await Content.GetSiteAsync();
+        _structuredData = StructuredDataBuilder.Person(site);
+    }
+}

@@ -1,0 +1,49 @@
+@implements IDisposable
+
+@inject IThemeService Theme
+
+@*
+    Light/dark switch.
+
+    Rendered with `suppress-hydration`-style care: the DOM already carries the correct theme
+    from the inline boot script, so this control's only job is to display and change it.
+*@
+
+<button type="button"
+        class="theme-toggle"
+        role="switch"
+        aria-checked="@_isDark.ToString().ToLowerInvariant()"
+        title="@Label"
+        @onclick="ToggleAsync">
+    <span class="theme-toggle__track" aria-hidden="true">
+        <span class="theme-toggle__thumb"></span>
+    </span>
+    <span class="visually-hidden">@Label</span>
+</button>
+
+@code {
+    private bool _isDark;
+
+    private string Label => _isDark ? "Switch to light theme" : "Switch to dark theme";
+
+    protected override void OnInitialized() => Theme.Changed += OnThemeChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // JavaScript interop is unavailable until after the first render completes.
+        if (firstRender)
+        {
+            await Theme.InitialiseAsync();
+        }
+    }
+
+    private Task ToggleAsync() => Theme.ToggleAsync();
+
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        _isDark = Theme.IsDark;
+        StateHasChanged();
+    }
+
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

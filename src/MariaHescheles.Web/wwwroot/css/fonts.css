@@ -1,0 +1,35 @@
+/*
+    Web fonts.
+
+    Both families are optional. The stacks in tokens.css begin with high-quality system
+    faces, so the site is fully and correctly typeset before these load — and remains so if
+    they are never added at all.
+
+    To self-host (recommended over a font CDN: no third-party request, no third-party
+    tracking, no extra DNS and TLS handshake on the critical path), download the variable
+    WOFF2 files and drop them in wwwroot/fonts/. See docs/design-system.md for the exact
+    files and licences. Both are SIL Open Font Licence.
+
+    `font-display: swap` is deliberate. The alternative, `optional`, would avoid the reflow
+    when the font arrives but frequently means visitors never see the intended typeface at
+    all — unacceptable on a site whose subject is design.
+*/
+
+@font-face {
+    font-family: 'Fraunces';
+    src: url('../fonts/fraunces-variable.woff2') format('woff2-variations');
+    font-weight: 300 700;
+    /* Fraunces ships optical sizing; letting the browser drive it keeps display sizes
+       elegant and small sizes legible from one file. */
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Inter';
+    src: url('../fonts/inter-variable.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}

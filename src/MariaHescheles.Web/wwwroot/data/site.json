@@ -1,0 +1,29 @@
+{
+  "name": "Maria Hescheles",
+  "role": "Interior Designer",
+  "tagline": "Rooms that know what they are.",
+  "email": "maria.hescheles@gmail.com",
+  "phone": null,
+  "location": "Seattle, WA",
+
+  "canonicalOrigin": "https://mariahescheles.com",
+
+  "navigation": [
+    { "label": "Work", "href": "work" },
+    { "label": "Studio", "href": "studio" },
+    { "label": "About", "href": "about" },
+    { "label": "Contact", "href": "contact" }
+  ],
+
+  "social": [
+    { "label": "Instagram", "url": "https://instagram.com/" },
+    { "label": "Pinterest", "url": "https://pinterest.com/" }
+  ],
+
+  "metadata": {
+    "title": "Maria Hescheles",
+    "description": "Interior design for homes and hospitality. Selected work, documented room by room.",
+    "imageUrl": "media/social/home.jpg",
+    "imageAlt": "A sunlit living room with a plaster fireplace and a low linen sofa."
+  }
+}

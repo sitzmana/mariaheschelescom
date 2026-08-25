@@ -1,0 +1,89 @@
+@page "/studio"
+
+@inject IContentService Content
+
+@*
+    Studio index: work outside interior design.
+
+    Same structure as the portfolio index, filtered by discipline rather than category. The
+    filter list is derived from the data, so adding "Textiles" to collections.json makes a
+    new filter appear with no code change.
+*@
+
+<PageHead Title="Studio"
+          Description="Ceramics and other work made by hand in the studio."
+          Image="media/social/studio.jpg" />
+
+<SectionHeading Level="1"
+                Eyebrow="Studio"
+                Title="Made by hand"
+                Lead="Work that happens away from the drawings."
+                Class="page-heading" />
+
+@if (_collections is null)
+{
+    <LoadingSkeleton Rows="3" />
+}
+else if (_collections.Count == 0)
+{
+    <p class="empty-state">Nothing here yet.</p>
+}
+else
+{
+    @if (_disciplines.Count > 1)
+    {
+        <nav class="filters" aria-label="Filter by discipline">
+            <button type="button"
+                    class="@FilterClass(null)"
+                    aria-pressed="@((_active is null).ToString().ToLowerInvariant())"
+                    @onclick="() => SetFilter(null)">
+                All
+            </button>
+
+            @foreach (var discipline in _disciplines)
+            {
+                var value = discipline;
+                <button type="button"
+                        class="@FilterClass(value)"
+                        aria-pressed="@((_active == value).ToString().ToLowerInvariant())"
+                        @onclick="() => SetFilter(value)">
+                    @value
+                </button>
+            }
+        </nav>
+    }
+
+    <p class="visually-hidden" role="status">
+        Showing @Visible.Count of @_collections.Count collections.
+    </p>
+
+    <div class="project-grid project-grid--index">
+        @foreach (var (collection, index) in Visible.Select((c, i) => (c, i)))
+        {
+            <div class="project-grid__cell" @key="collection.Slug" style="@($"--stagger:{index}")">
+                <CollectionCard Collection="@collection" Priority="@(index == 0)" />
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private IReadOnlyList<Collection>? _collections;
+    private IReadOnlyList<string> _disciplines = [];
+    private string? _active;
+
+    private IReadOnlyList<Collection> Visible => _active is null
+        ? _collections ?? []
+        : [.. (_collections ?? []).Where(c => string.Equals(c.Discipline, _active, StringComparison.OrdinalIgnoreCase))];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _collections = await Content.GetCollectionsAsync();
+        _disciplines = await Content.GetDisciplinesAsync();
+    }
+
+    private void SetFilter(string? discipline) => _active = discipline;
+
+    private string FilterClass(string? discipline)
+        => _active == discipline ? "filters__item is-active" : "filters__item";
+}

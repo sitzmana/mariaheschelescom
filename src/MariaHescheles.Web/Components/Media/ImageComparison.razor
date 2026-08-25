@@ -1,0 +1,90 @@
+@implements IAsyncDisposable
+
+@inject DocumentInterop Document
+
+@*
+    Before/after comparison slider.
+
+    Two decisions worth calling out:
+
+    * The control is a real <input type="range">. It could have been a div with pointer
+      handlers, but then it would not be keyboard operable, would not announce a value, and
+      would not work with switch access. The native control gets all of that for free and is
+      then styled out of recognition.
+
+    * Dragging is wired straight from the range input to a CSS custom property in JavaScript,
+      bypassing Blazor entirely. A drag fires input events at display refresh rate; routing
+      those through the renderer would mean sixty component renders a second to move one line.
+*@
+
+<div @ref="_container" class="compare" style="--compare-split:50">
+
+    <div class="compare__layer compare__layer--after">
+        <ResponsiveImage Asset="@After" ShowCaption="false" />
+        <span class="compare__tag compare__tag--after" aria-hidden="true">@AfterLabel</span>
+    </div>
+
+    <div class="compare__layer compare__layer--before">
+        <ResponsiveImage Asset="@Before" ShowCaption="false" />
+        <span class="compare__tag compare__tag--before" aria-hidden="true">@BeforeLabel</span>
+    </div>
+
+    <div class="compare__handle" aria-hidden="true">
+        <span class="compare__grip"></span>
+    </div>
+
+    <input @ref="_range"
+           class="compare__range"
+           type="range"
+           min="0"
+           max="100"
+           step="0.1"
+           value="50"
+           aria-label="@($"Reveal {BeforeLabel} or {AfterLabel}")"
+           aria-valuetext="@($"{BeforeLabel} and {AfterLabel} shown equally")" />
+</div>
+
+@code {
+    private ElementReference _container;
+    private ElementReference _range;
+    private bool _bound;
+
+    [Parameter, EditorRequired]
+    public required MediaAsset Before { get; set; }
+
+    [Parameter, EditorRequired]
+    public required MediaAsset After { get; set; }
+
+    [Parameter]
+    public string BeforeLabel { get; set; } = "Before";
+
+    [Parameter]
+    public string AfterLabel { get; set; } = "After";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _bound)
+        {
+            return;
+        }
+
+        _bound = true;
+        await Document.BindRangeToPropertyAsync(_range, _container, "--compare-split");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!_bound)
+        {
+            return;
+        }
+
+        try
+        {
+            await Document.ReleaseRangeBindingAsync(_range);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+}

@@ -1,0 +1,24 @@
+@*
+    Placeholder shown while content JSON is in flight.
+
+    Deliberately a set of shimmering blocks rather than a spinner: matching the shape of the
+    content that is coming keeps the page from visibly reflowing when it arrives, and reads as
+    progress rather than as waiting.
+
+    `aria-hidden` because there is nothing here worth announcing; the live region on the
+    surrounding page reports the real state.
+*@
+
+<div class="skeleton" role="status" aria-label="Loading">
+    @for (var i = 0; i < Rows; i++)
+    {
+        <div class="skeleton__row" style="@($"--stagger:{i}")" aria-hidden="true"></div>
+    }
+    <span class="visually-hidden">Loading content</span>
+</div>
+
+@code {
+    /// <summary>Number of placeholder rows. Match it roughly to the content being awaited.</summary>
+    [Parameter]
+    public int Rows { get; set; } = 3;
+}

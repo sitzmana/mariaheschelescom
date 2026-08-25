@@ -1,0 +1,448 @@
+/*
+    Layout primitives and page-level structure.
+*/
+
+/* -------------------------------------------------------------------------
+   Page shell
+   ------------------------------------------------------------------------- */
+
+.site-main {
+    display: block;
+    min-height: 60svh;
+    /* Focused programmatically after navigation; it should never draw its own ring. */
+    outline: none;
+}
+
+/*
+    The content grid.
+
+    A single named-column grid that every section opts into. Children pick a lane by name,
+    which is how a "full bleed" image and an inset paragraph can sit in the same flow without
+    negative margins or overflow hacks.
+*/
+.block {
+    display: grid;
+    grid-template-columns:
+        [full-start] var(--gutter)
+        [wide-start] minmax(0, 1fr)
+        [inset-start] min(var(--width-content), 100% - var(--gutter) * 2)
+        [inset-end] minmax(0, 1fr)
+        [wide-end] var(--gutter)
+        [full-end];
+    margin-block: var(--space-2xl);
+}
+
+.block > * {
+    grid-column: inset;
+}
+
+.block--inset > * {
+    grid-column: inset;
+}
+
+.block--wide > * {
+    grid-column: wide;
+}
+
+.block--full > * {
+    grid-column: full;
+}
+
+/* Reading measure. Applied to body copy only, never to headings or media. */
+.prose {
+    max-width: var(--measure);
+}
+
+.prose__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.prose__heading {
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-md);
+}
+
+.prose__paragraph + .prose__paragraph {
+    margin-top: var(--space-sm);
+}
+
+.prose__paragraph {
+    color: var(--color-ink-muted);
+    line-height: var(--leading-relaxed);
+}
+
+/* -------------------------------------------------------------------------
+   Header
+   ------------------------------------------------------------------------- */
+
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    /* The blur is applied only once scrolled, so the header is completely invisible over
+       a hero image until it actually needs to separate itself from the content. */
+    transition:
+        background-color var(--duration-base) var(--ease-out-quart),
+        border-color var(--duration-base) var(--ease-out-quart),
+        backdrop-filter var(--duration-base) var(--ease-out-quart);
+    border-bottom: 1px solid transparent;
+}
+
+[data-scrolled='true'] .site-header {
+    background-color: color-mix(in srgb, var(--color-canvas) 82%, transparent);
+    border-bottom-color: var(--color-line);
+    backdrop-filter: blur(14px) saturate(1.4);
+}
+
+.site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    height: var(--header-height);
+    padding-inline: var(--gutter);
+    max-width: var(--width-wide);
+    margin-inline: auto;
+}
+
+.wordmark {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    line-height: 1.15;
+}
+
+.wordmark__name {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    letter-spacing: var(--tracking-tight);
+}
+
+.wordmark__role {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+}
+
+.site-nav__list {
+    display: flex;
+    gap: var(--space-lg);
+}
+
+.site-nav__link {
+    position: relative;
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--color-ink-muted);
+    transition: color var(--duration-fast) var(--ease-out-quart);
+}
+
+.site-nav__link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: -0.35em;
+    height: 1px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform var(--duration-base) var(--ease-out-expo);
+}
+
+.site-nav__link:hover,
+.site-nav__link.active {
+    color: var(--color-ink);
+}
+
+.site-nav__link:hover::after,
+.site-nav__link.active::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+}
+
+.site-header__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.menu-button {
+    display: none;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+}
+
+/* Three bars drawn from one element: the ::before and ::after become the outer two. */
+.menu-button__bars,
+.menu-button__bars::before,
+.menu-button__bars::after {
+    display: block;
+    width: 1.25rem;
+    height: 1px;
+    background-color: currentColor;
+    transition: transform var(--duration-base) var(--ease-out-expo);
+}
+
+.menu-button__bars::before,
+.menu-button__bars::after {
+    content: '';
+    position: absolute;
+}
+
+.menu-button__bars::before {
+    transform: translateY(-6px);
+}
+
+.menu-button__bars::after {
+    transform: translateY(6px);
+}
+
+@media (max-width: 52rem) {
+    .site-nav {
+        display: none;
+    }
+
+    .menu-button {
+        display: grid;
+        position: relative;
+    }
+}
+
+/* -------------------------------------------------------------------------
+   Mobile menu overlay (a native <dialog>)
+   ------------------------------------------------------------------------- */
+
+.nav-overlay {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+}
+
+.nav-overlay::backdrop {
+    background-color: var(--color-backdrop);
+}
+
+.nav-overlay__inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-xl);
+    height: 100%;
+    padding: var(--gutter);
+}
+
+.nav-overlay__close {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--gutter);
+    font-size: var(--text-lg);
+    line-height: 1;
+}
+
+.nav-overlay__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.nav-overlay__link {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    text-decoration: none;
+    /* Each item arrives a beat after the one above it. */
+    animation: overlay-in var(--duration-slow) var(--ease-out-expo) both;
+    animation-delay: calc(var(--stagger, 0) * 70ms + 60ms);
+}
+
+@keyframes overlay-in {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 1.5rem, 0);
+    }
+}
+
+.nav-overlay__social {
+    display: flex;
+    gap: var(--space-md);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+}
+
+/* -------------------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------------------- */
+
+.hero {
+    display: grid;
+    place-items: center;
+    /* Full height minus the header, so the fold lands exactly at the bottom of the viewport. */
+    min-height: calc(100svh - var(--header-height));
+    padding-inline: var(--gutter);
+    position: relative;
+    text-align: center;
+}
+
+.hero__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+    max-width: min(50rem, 100%);
+}
+
+.hero__title {
+    font-size: var(--text-3xl);
+    /* Measured in ch at the heading's own size, not the container's. Constraining the
+       wrapper instead produces three words per line at display sizes. */
+    max-width: 14ch;
+}
+
+.hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2xs);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+}
+
+.hero__scroll-cue {
+    position: absolute;
+    bottom: var(--space-lg);
+    /* Fades out as soon as the visitor starts scrolling: a cue that is still there after
+       you have taken its advice is just clutter. */
+    opacity: calc(1 - var(--page-progress, 0) * 12);
+}
+
+.hero__scroll-line {
+    display: block;
+    width: 1px;
+    height: 3rem;
+    background: linear-gradient(to bottom, transparent, var(--color-ink-faint));
+    animation: scroll-cue 2.4s var(--ease-in-out) infinite;
+}
+
+@keyframes scroll-cue {
+    0%, 100% { transform: scaleY(0.4); transform-origin: top; opacity: 0.4; }
+    50%      { transform: scaleY(1);   transform-origin: top; opacity: 1; }
+}
+
+/* -------------------------------------------------------------------------
+   Page headings and sections
+   ------------------------------------------------------------------------- */
+
+.page-heading,
+.home-work,
+.about,
+.contact,
+.not-found,
+.error-panel {
+    max-width: var(--width-content);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+}
+
+.page-heading {
+    padding-block: var(--space-2xl) var(--space-lg);
+}
+
+.home-work {
+    padding-block: var(--space-3xl);
+}
+
+.section-heading {
+    max-width: var(--measure);
+    margin-bottom: var(--space-xl);
+}
+
+.section-heading__eyebrow {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-ink-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.section-heading__title {
+    font-size: var(--text-xl);
+}
+
+.section-heading__lead {
+    margin-top: var(--space-sm);
+    color: var(--color-ink-muted);
+    font-size: var(--text-md);
+}
+
+/* -------------------------------------------------------------------------
+   Footer
+   ------------------------------------------------------------------------- */
+
+.site-footer {
+    border-top: 1px solid var(--color-line);
+    margin-top: var(--space-3xl);
+}
+
+.site-footer__inner {
+    display: grid;
+    gap: var(--space-xl);
+    max-width: var(--width-content);
+    margin-inline: auto;
+    padding: var(--space-2xl) var(--gutter);
+}
+
+@media (min-width: 52rem) {
+    .site-footer__inner {
+        grid-template-columns: 1.2fr 1fr;
+        align-items: end;
+    }
+}
+
+.site-footer__lead {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    margin-bottom: var(--space-sm);
+}
+
+.site-footer__email {
+    display: inline-block;
+    margin-bottom: var(--space-md);
+    color: var(--color-ink-muted);
+}
+
+.site-footer__meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    font-size: var(--text-sm);
+    color: var(--color-ink-muted);
+}
+
+.site-footer__social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.site-footer__copyright {
+    margin-top: var(--space-sm);
+    font-size: var(--text-xs);
+    color: var(--color-ink-faint);
+}

@@ -1,0 +1,109 @@
+@page "/studio/{Slug}"
+
+@inject IContentService Content
+
+@*
+    A single collection: a statement, then the pieces.
+
+    Shorter than a case study on purpose. An interiors project needs its narrative explained;
+    a shelf of pots mostly needs to be looked at.
+*@
+
+@if (_state == LoadState.Loading)
+{
+    <LoadingSkeleton Rows="4" />
+}
+else if (_collection is null)
+{
+    <NotFoundContent />
+}
+else
+{
+    <PageHead Title="@_collection.Title"
+              Description="@_collection.Summary"
+              Image="@_collection.Cover.Src"
+              ImageAlt="@_collection.Cover.Alt"
+              OpenGraphType="article" />
+
+    <article class="collection" style="@AccentStyle">
+
+        <header class="case-study__header">
+            <Reveal Variant="RevealVariant.Fade">
+                <p class="case-study__eyebrow">
+                    <span>@_collection.Discipline</span>
+                    @if (_collection.Year > 0)
+                    {
+                        <span class="case-study__dot" aria-hidden="true">&middot;</span>
+                        <span>@_collection.Year</span>
+                    }
+                </p>
+            </Reveal>
+
+            <Reveal Variant="RevealVariant.Mask" Delay="80">
+                <h1 class="case-study__title">@_collection.Title</h1>
+            </Reveal>
+
+            @if (_collection.Subtitle is not null)
+            {
+                <Reveal Variant="RevealVariant.Fade" Delay="180">
+                    <p class="case-study__subtitle">@_collection.Subtitle</p>
+                </Reveal>
+            }
+        </header>
+
+        <div class="case-study__cover">
+            <Parallax Depth="0.08">
+                <ResponsiveImage Asset="@_collection.Cover" Priority="true" Sizes="100vw" />
+            </Parallax>
+        </div>
+
+        @if (_collection.Statement.Count > 0)
+        {
+            <div class="block block--inset">
+                <Reveal Variant="RevealVariant.Rise">
+                    <div class="prose">
+                        @foreach (var paragraph in _collection.Statement)
+                        {
+                            <p class="prose__paragraph">@paragraph</p>
+                        }
+                    </div>
+                </Reveal>
+            </div>
+        }
+
+        @if (_collection.Pieces.Count > 0)
+        {
+            <div class="block block--wide">
+                <PieceGrid Pieces="@_collection.Pieces" />
+            </div>
+        }
+
+        <nav class="case-study__pager" aria-label="Other collections">
+            <a class="pager__link pager__link--prev" href="studio">
+                <span class="pager__label">Back</span>
+                <span class="pager__title">All studio work</span>
+            </a>
+        </nav>
+
+    </article>
+}
+
+@code {
+    private enum LoadState { Loading, Loaded }
+
+    private LoadState _state = LoadState.Loading;
+    private Collection? _collection;
+
+    /// <summary>The URL segment identifying the collection.</summary>
+    [Parameter]
+    public string Slug { get; set; } = string.Empty;
+
+    private string? AccentStyle => _collection?.Accent is null ? null : $"--accent:{_collection.Accent}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _state = LoadState.Loading;
+        _collection = await Content.GetCollectionAsync(Slug);
+        _state = LoadState.Loaded;
+    }
+}

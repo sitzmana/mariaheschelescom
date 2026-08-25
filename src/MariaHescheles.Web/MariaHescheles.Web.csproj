@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <RootNamespace>MariaHescheles.Web</RootNamespace>
+    <AssemblyName>MariaHescheles.Web</AssemblyName>
+    <!-- Lets the SDK inject fingerprinted asset URLs into index.html at publish time. -->
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Publish size and startup">
+    <!--
+      The Blazor WebAssembly SDK already IL-trims and Brotli-compresses on publish.
+      We additionally opt into the trim/AOT analyzers so that trim-unsafe code (most
+      commonly reflection-based JSON) surfaces as a build error rather than as a
+      runtime failure that only reproduces in a published build.
+    -->
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+
+    <!--
+      Deliberately NOT set here:
+
+        InvariantTimezone   Drops the tz database (~130 KB) but relinks the native runtime,
+                            which makes the `wasm-tools` workload a hard requirement for an
+                            ordinary build. Not worth forcing that on every contributor.
+        RunAOTCompilation   Roughly triples download size to speed up CPU-bound work. This
+                            site is network- and render-bound, so it would be a net loss.
+
+      Both need `dotnet workload install wasm-tools` first. See docs/performance.md before
+      turning either on, and measure the result rather than assuming it.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup Label="Test visibility">
+    <InternalsVisibleTo Include="MariaHescheles.Web.Tests" />
+  </ItemGroup>
+
+</Project>

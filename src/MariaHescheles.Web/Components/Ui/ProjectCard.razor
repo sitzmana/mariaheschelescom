@@ -1,0 +1,50 @@
+@*
+    A project's entry in a grid.
+
+    The whole card is one anchor rather than a card containing several links, so keyboard
+    users get one tab stop instead of three and assistive technology announces one destination.
+*@
+
+<a class="project-card" href="@($"work/{Project.Slug}")" style="@AccentStyle">
+    <div class="project-card__media">
+        <ResponsiveImage Asset="@Project.Cover"
+                         ShowCaption="false"
+                         Priority="@Priority"
+                         Sizes="(max-width: 48rem) 92vw, (max-width: 80rem) 46vw, 32vw" />
+    </div>
+
+    <div class="project-card__body">
+        <h3 class="project-card__title">@Project.Title</h3>
+
+        @if (Project.Subtitle is not null)
+        {
+            <p class="project-card__subtitle">@Project.Subtitle</p>
+        }
+
+        <p class="project-card__meta">
+            <span>@Project.Category</span>
+            @if (Project.Location is not null)
+            {
+                <span class="project-card__dot" aria-hidden="true">&middot;</span>
+                <span>@Project.Location</span>
+            }
+            @if (Project.Year > 0)
+            {
+                <span class="project-card__dot" aria-hidden="true">&middot;</span>
+                <span>@Project.Year</span>
+            }
+        </p>
+    </div>
+</a>
+
+@code {
+    [Parameter, EditorRequired]
+    public required Project Project { get; set; }
+
+    /// <summary>Set on the first card only, which is usually the page's LCP element.</summary>
+    [Parameter]
+    public bool Priority { get; set; }
+
+    // Re-tints the card's hover and focus treatment with the project's own palette.
+    private string? AccentStyle => Project.Accent is null ? null : $"--accent:{Project.Accent}";
+}

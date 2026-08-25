@@ -1,0 +1,37 @@
+@*
+    Rendered by the layout's <ErrorBoundary> when a component throws during render.
+
+    Calm and specific for a visitor, but not a dead end for whoever maintains the site: by far
+    the most likely cause is a mistake in the content JSON, and a panel that says only
+    "something went wrong" makes that impossible to find. The exception message — message only,
+    never a stack trace — is available one click away.
+*@
+
+<section class="error-panel">
+    <h1 class="error-panel__title">Something went wrong on this page.</h1>
+    <p class="error-panel__body">
+        The rest of the site is fine. Try again, or head back to the work.
+    </p>
+    <div class="error-panel__actions">
+        <button type="button" class="button" @onclick="OnRetry">Try again</button>
+        <a class="button button--ghost" href="work">View the work</a>
+    </div>
+
+    @if (Exception is not null)
+    {
+        <details class="error-panel__details">
+            <summary>Technical details</summary>
+            <p class="error-panel__message">@Exception.Message</p>
+        </details>
+    }
+</section>
+
+@code {
+    /// <summary>The exception the boundary caught. Only its message is shown.</summary>
+    [Parameter]
+    public Exception? Exception { get; set; }
+
+    /// <summary>Resets the error boundary so the failed subtree re-renders from scratch.</summary>
+    [Parameter]
+    public EventCallback OnRetry { get; set; }
+}

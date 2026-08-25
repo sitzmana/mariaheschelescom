@@ -1,0 +1,20 @@
+@*
+    Application root.
+
+    The router resolves @page directives across this assembly. Anything not matched falls
+    through to the NotFound template, which renders inside the normal chrome so a mistyped
+    URL still looks like the site rather than a browser error.
+*@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        @* Moves keyboard focus to the new page's heading after every navigation, so screen
+           reader and keyboard users are not left at the top of the previous document. *@
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <NotFoundContent />
+        </LayoutView>
+    </NotFound>
+</Router>

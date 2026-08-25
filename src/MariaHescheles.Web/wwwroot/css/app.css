@@ -1,0 +1,39 @@
+/*
+    Stylesheet entry point.
+
+    Import order is load-bearing — later files depend on earlier ones and, where specificity
+    ties, win. Keep it:
+
+      tokens      the vocabulary. Nothing above it may reference a variable.
+      reset       normalisation and base element styling.
+      fonts       @font-face declarations. Optional; the stacks degrade gracefully.
+      boot        the pre-application loading screen.
+      layout      page structure, grids, header, footer.
+      motion      reveal, parallax and scroll-scrubbed effects.
+      components  everything under Components/, one section each.
+
+    Single-file @import is used rather than a build step on purpose: there is no bundler in
+    this project, so a designer can edit a stylesheet and refresh. The cost is one extra
+    round trip per file on a cold cache, which the SDK's HTTP/2 static asset serving and
+    fingerprinted caching make negligible. If that ever stops being true, concatenate at
+    publish time rather than introducing a toolchain.
+*/
+
+/*
+    Explicit cascade layer order, declared before anything else.
+
+    Layer precedence is fixed by first appearance, so stating it up front means a component
+    rule can never be accidentally outgunned by a more specific base selector. That removes
+    the usual reason people reach for !important.
+
+    `@layer` statements are the one thing permitted above @import.
+*/
+@layer tokens, base, layout, motion, components, utilities;
+
+@import url('tokens.css') layer(tokens);
+@import url('reset.css') layer(base);
+@import url('fonts.css') layer(base);
+@import url('boot.css') layer(components);
+@import url('layout.css') layer(layout);
+@import url('motion.css') layer(motion);
+@import url('components.css') layer(components);

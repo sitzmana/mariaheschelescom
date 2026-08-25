@@ -1,0 +1,84 @@
+@*
+    The objects in a collection.
+
+    A piece with a 3D model renders the viewer in place of the photograph. That costs nothing
+    until someone presses "View in 3D" — ModelViewer shows only the poster until activated —
+    so a page of turnable pots is exactly as heavy as a page of pictures of pots for anyone
+    who does not want to turn them.
+
+    Pieces without a model open in the shared lightbox instead.
+*@
+
+<ul class="pieces">
+    @for (var i = 0; i < Pieces.Count; i++)
+    {
+        var index = i;
+        var piece = Pieces[i];
+
+        <li class="pieces__item">
+            <Reveal Variant="RevealVariant.Rise" Delay="@(index % 3 * 80)">
+
+                @if (piece.Scene is not null)
+                {
+                    <ModelViewer Scene="@piece.Scene" />
+                }
+                else
+                {
+                    <button type="button"
+                            class="pieces__trigger"
+                            @onclick="() => OpenAsync(piece)"
+                            aria-label="@($"Open {piece.Title} full screen")">
+                        <ResponsiveImage Asset="@piece.Image"
+                                         ShowCaption="false"
+                                         Sizes="(max-width: 48rem) 92vw, (max-width: 72rem) 45vw, 30vw" />
+                    </button>
+                }
+
+                <div class="pieces__caption">
+                    <h3 class="pieces__title">@piece.Title</h3>
+
+                    <p class="pieces__meta">
+                        @if (piece.Materials is not null)
+                        {
+                            <span>@piece.Materials</span>
+                        }
+                        @if (piece.Dimensions is not null)
+                        {
+                            <span class="pieces__dimensions">@piece.Dimensions</span>
+                        }
+                        @if (piece.Year > 0)
+                        {
+                            <span>@piece.Year</span>
+                        }
+                    </p>
+
+                    @if (piece.Description is not null)
+                    {
+                        <p class="pieces__description">@piece.Description</p>
+                    }
+                </div>
+
+            </Reveal>
+        </li>
+    }
+</ul>
+
+<Lightbox @ref="_lightbox" Images="@PhotographedImages" />
+
+@code {
+    private Lightbox? _lightbox;
+
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<Piece> Pieces { get; set; }
+
+    // Only pieces without a model appear in the lightbox, so the index a card passes must be
+    // its position in this filtered list rather than in Pieces.
+    private IReadOnlyList<MediaAsset> PhotographedImages
+        => [.. Pieces.Where(static p => p.Scene is null).Select(static p => p.Image)];
+
+    private Task OpenAsync(Piece piece)
+    {
+        var index = PhotographedImages.ToList().IndexOf(piece.Image);
+        return index >= 0 && _lightbox is not null ? _lightbox.ShowAsync(index) : Task.CompletedTask;
+    }
+}

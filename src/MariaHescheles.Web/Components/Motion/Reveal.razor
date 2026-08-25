@@ -1,0 +1,88 @@
+@implements IAsyncDisposable
+
+@inject MotionInterop Motion
+
+@*
+    Entrance animation on first scroll into view.
+
+    Everything visual lives in `motion.css`. This component only adds the element to a shared
+    IntersectionObserver, which toggles one class. There is no per-frame work and no Blazor
+    re-render, so a page can contain a hundred of these without measurable cost.
+
+    Usage:
+        <Reveal>            ... </Reveal>
+        <Reveal Delay="120"> ... </Reveal>
+        <Reveal Variant="RevealVariant.Scale" Class="my-hero"> ... </Reveal>
+*@
+
+<div @ref="_element"
+     class="@CssClass"
+     style="@CssStyle"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    private ElementReference _element;
+    private bool _registered;
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Which entrance the element makes. See <c>motion.css</c> for the definitions.</summary>
+    [Parameter]
+    public RevealVariant Variant { get; set; } = RevealVariant.Rise;
+
+    /// <summary>
+    /// Delay before the animation starts, in milliseconds. Use small increments (60–120ms)
+    /// on sibling elements to make a group arrive as a sequence rather than a block.
+    /// </summary>
+    [Parameter]
+    public int Delay { get; set; }
+
+    /// <summary>
+    /// When <see langword="false"/> the element re-hides on exit and animates again on the way
+    /// back. Off by default: repeating entrance animations get tiring on a second pass.
+    /// </summary>
+    [Parameter]
+    public bool Once { get; set; } = true;
+
+    /// <summary>Additional classes merged onto the wrapper.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string CssClass => $"reveal reveal--{Variant.ToString().ToLowerInvariant()} {Class}".TrimEnd();
+
+    private string? CssStyle => Delay > 0 ? $"--reveal-delay:{Delay}ms" : null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _registered)
+        {
+            return;
+        }
+
+        _registered = true;
+        await Motion.ObserveRevealAsync(_element, Once);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!_registered)
+        {
+            return;
+        }
+
+        try
+        {
+            await Motion.ReleaseAsync(_element);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Page is unloading; the observer goes with it.
+        }
+    }
+}

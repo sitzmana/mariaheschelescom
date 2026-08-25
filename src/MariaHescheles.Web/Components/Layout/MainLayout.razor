@@ -1,0 +1,70 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+
+@inject IContentService Content
+@inject NavigationManager Navigation
+@inject DocumentInterop Document
+
+@*
+    The persistent chrome around every page.
+
+    SiteContent is loaded once here and cascaded, so no page has to re-fetch identity,
+    navigation or SEO defaults. Nested components receive it as an optional cascading
+    parameter and simply render nothing site-specific until it arrives.
+*@
+
+<CascadingValue TValue="SiteContent?" Value="_site">
+
+    @* First tab stop on every page. Visually hidden until focused. *@
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <SiteHeader />
+
+    <main id="main-content" class="site-main" tabindex="-1">
+        @* An unhandled render exception should cost the visitor one section, not the whole site. *@
+        <ErrorBoundary @ref="_errorBoundary">
+            <ChildContent>@Body</ChildContent>
+            <ErrorContent Context="exception">
+                <ErrorPanel Exception="exception" OnRetry="RecoverFromError" />
+            </ErrorContent>
+        </ErrorBoundary>
+    </main>
+
+    <SiteFooter />
+
+</CascadingValue>
+
+@code {
+    private SiteContent? _site;
+    private ErrorBoundary? _errorBoundary;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        _site = await Content.GetSiteAsync();
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // A single-page app keeps the scroll position across route changes, which reads as a
+        // broken page. Reset it, and clear any error the previous route left behind.
+        _errorBoundary?.Recover();
+        _ = ResetScrollAsync();
+    }
+
+    private async Task ResetScrollAsync()
+    {
+        try
+        {
+            await Document.ScrollToTopAsync();
+        }
+        catch (JSException)
+        {
+            // Cosmetic only. Never let it surface during navigation.
+        }
+    }
+
+    private void RecoverFromError() => _errorBoundary?.Recover();
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

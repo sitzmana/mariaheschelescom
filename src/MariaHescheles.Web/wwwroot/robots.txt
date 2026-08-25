@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The framework payload is not content and wastes crawl budget.
+Disallow: /_framework/
+
+Sitemap: https://mariahescheles.com/sitemap.xml

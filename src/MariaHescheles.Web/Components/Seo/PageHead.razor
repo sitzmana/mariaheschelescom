@@ -1,0 +1,123 @@
+@inject NavigationManager Navigation
+@inject DocumentInterop Document
+
+@*
+    Per-page document metadata.
+
+    A standalone WebAssembly app ships one HTML file, so a crawler that does not run
+    JavaScript only ever sees the defaults baked into index.html. Everything below is the
+    runtime layer for the crawlers and link unfurlers that do run it — which is all of the
+    ones that matter: Google, Bing, Slack, Discord, LinkedIn, iMessage.
+
+    <PageTitle> and <HeadContent> are projected into <head> by the HeadOutlet root component
+    registered in Program.cs.
+*@
+
+<PageTitle>@DocumentTitle</PageTitle>
+
+<HeadContent>
+    <meta name="description" content="@Description" />
+    <link rel="canonical" href="@CanonicalUrl" />
+
+    @if (NoIndex)
+    {
+        <meta name="robots" content="noindex, follow" />
+    }
+
+    <meta property="og:type" content="@OpenGraphType" />
+    <meta property="og:site_name" content="@SiteName" />
+    <meta property="og:title" content="@Title" />
+    <meta property="og:description" content="@Description" />
+    <meta property="og:url" content="@CanonicalUrl" />
+
+    @if (ImageUrl is not null)
+    {
+        <meta property="og:image" content="@ImageUrl" />
+        <meta property="og:image:alt" content="@(ImageAlt ?? Title)" />
+        <meta name="twitter:card" content="summary_large_image" />
+    }
+    else
+    {
+        <meta name="twitter:card" content="summary" />
+    }
+</HeadContent>
+
+@code {
+    private string? _publishedStructuredData;
+
+    [CascadingParameter]
+    private SiteContent? Site { get; set; }
+
+    [Parameter, EditorRequired]
+    public required string Title { get; set; }
+
+    [Parameter]
+    public string? Description { get; set; }
+
+    /// <summary>Root-relative path to the social preview image, ideally 1200&#215;630.</summary>
+    [Parameter]
+    public string? Image { get; set; }
+
+    [Parameter]
+    public string? ImageAlt { get; set; }
+
+    /// <summary>Open Graph object type. <c>website</c> for index pages, <c>article</c> for case studies.</summary>
+    [Parameter]
+    public string OpenGraphType { get; set; } = "website";
+
+    /// <summary>Keeps the page out of search indexes while still allowing links to be followed.</summary>
+    [Parameter]
+    public bool NoIndex { get; set; }
+
+    /// <summary>Optional JSON-LD document, built with <see cref="StructuredDataBuilder"/>.</summary>
+    [Parameter]
+    public string? StructuredData { get; set; }
+
+    private string SiteName => Site?.Name ?? "Maria Hescheles";
+
+    // "Name" alone on the home page; "Page — Name" everywhere else. Repeating the site name
+    // in front of every title wastes the ~60 characters a search result actually shows.
+    private string DocumentTitle => Title.Equals(SiteName, StringComparison.Ordinal)
+        ? $"{SiteName} — {Site?.Role ?? "Interior Design"}"
+        : $"{Title} — {SiteName}";
+
+    private string? ImageUrl => Image is null ? null : ToAbsolute(Image);
+
+    private string CanonicalUrl
+    {
+        get
+        {
+            var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+            // Query strings and fragments are navigation state, never separate documents.
+            var cut = relative.AsSpan().IndexOfAny('?', '#');
+            if (cut >= 0)
+            {
+                relative = relative[..cut];
+            }
+
+            return ToAbsolute(relative);
+        }
+    }
+
+    private string ToAbsolute(string relativePath)
+    {
+        var origin = (Site?.CanonicalOrigin ?? Navigation.BaseUri).TrimEnd('/');
+        var trimmed = relativePath.TrimStart('/');
+
+        return trimmed.Length == 0 ? $"{origin}/" : $"{origin}/{trimmed}";
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Re-published only when the document actually changes, so navigating between case
+        // studies does not thrash the <head>.
+        if (StructuredData is null || StructuredData == _publishedStructuredData)
+        {
+            return;
+        }
+
+        _publishedStructuredData = StructuredData;
+        await Document.SetStructuredDataAsync("page-structured-data", StructuredData);
+    }
+}

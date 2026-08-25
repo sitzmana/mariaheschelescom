@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!--
+        These defaults are what a crawler that does not execute JavaScript will see, because
+        a standalone WebAssembly app ships exactly one HTML file. Components override them at
+        runtime through <PageHead>; keep both in step when the tagline changes.
+    -->
+    <title>Maria Hescheles — Interior Designer</title>
+    <base href="/" />
+    <meta name="description" content="Maria Hescheles is an interior designer working across residential and commercial projects. Selected work, documented room by room." />
+    <meta name="author" content="Maria Hescheles" />
+    <link rel="canonical" href="https://mariahescheles.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Maria Hescheles" />
+    <meta property="og:title" content="Maria Hescheles — Interior Designer" />
+    <meta property="og:description" content="Selected interior design work, documented room by room." />
+    <meta property="og:url" content="https://mariahescheles.com/" />
+    <meta property="og:image" content="https://mariahescheles.com/media/social/home.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+        Applied before the first paint, and therefore before WebAssembly has even started
+        downloading. Without this, a visitor on a dark-mode device gets a full-screen white
+        flash for the second or so it takes the runtime to boot. It is deliberately inline,
+        synchronous and dependency-free: an external file would be another round trip during
+        the exact window this is meant to protect.
+    -->
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('mh-theme');
+                var theme = (stored === 'light' || stored === 'dark')
+                    ? stored
+                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme;
+            } catch (e) {
+                // Storage blocked. The document default of light applies.
+            }
+        })();
+    </script>
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="media/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
+    <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
+
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!--
+        three.js is resolved through an import map so that `import 'three'` inside scene.js
+        works with no bundler and no build step. The version is pinned here and nowhere else.
+
+        The library is only ever fetched when a visitor opens a 3D view: nothing on the
+        critical path references it. To remove the third-party dependency entirely, vendor
+        the files under wwwroot/lib/three/ and repoint these two entries — see
+        docs/motion-and-3d.md.
+    -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+        }
+    }
+    </script>
+</head>
+
+<body>
+
+    <!--
+        The boot screen. Replaced by the app once WebAssembly is running.
+
+        Blazor publishes download progress as the `--blazor-load-percentage` custom property,
+        which css/boot.css turns into a determinate ring. Presenting real progress rather than
+        an indefinite spinner is the difference between "loading" and "stuck".
+    -->
+    <div id="app">
+        <div class="boot" role="status" aria-live="polite">
+            <div class="boot__mark" aria-hidden="true">
+                <span class="boot__initial">M</span>
+                <span class="boot__initial">H</span>
+            </div>
+            <div class="boot__ring" aria-hidden="true"></div>
+            <p class="boot__label">Loading</p>
+        </div>
+    </div>
+
+    <!--
+        Shown only if the runtime fails outright: a corrupted cache, a proxy mangling .wasm,
+        or a browser too old for WebAssembly. Reloading genuinely fixes most of these.
+    -->
+    <div id="blazor-error-ui">
+        <p>Something went wrong while loading the site.</p>
+        <a href="." class="reload">Reload</a>
+        <button type="button" class="dismiss" aria-label="Dismiss">&times;</button>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>

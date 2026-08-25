@@ -1,0 +1,19 @@
+@*
+    Rendered by the router when no @page directive matches.
+
+    Kept inside the normal chrome so a mistyped or long-dead URL still feels like the site.
+*@
+
+<PageHead Title="Page not found" Description="That page has moved or never existed." NoIndex="true" />
+
+<section class="not-found">
+    <p class="not-found__code">404</p>
+    <h1 class="not-found__title">This page has been rearranged.</h1>
+    <p class="not-found__body">
+        The address you followed does not lead anywhere on this site any more.
+    </p>
+    <div class="not-found__actions">
+        <a class="button" href="work">Browse the work</a>
+        <a class="button button--ghost" href="">Return home</a>
+    </div>
+</section>

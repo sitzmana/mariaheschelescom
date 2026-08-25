@@ -1,0 +1,47 @@
+@*
+    Site footer. Doubles as the contact call to action, because the end of a case study is
+    exactly where an interested client is most likely to reach out.
+*@
+
+<footer class="site-footer">
+    <div class="site-footer__inner">
+
+        <div class="site-footer__cta">
+            <p class="site-footer__lead">Get in touch</p>
+            @if (!string.IsNullOrWhiteSpace(Site?.Email))
+            {
+                <a class="site-footer__email" href="@($"mailto:{Site.Email}")">@Site.Email</a>
+            }
+            <a class="button button--ghost" href="contact">Contact</a>
+        </div>
+
+        <div class="site-footer__meta">
+            @if (!string.IsNullOrWhiteSpace(Site?.Location))
+            {
+                <p class="site-footer__location">@Site.Location</p>
+            }
+
+            @if (Site is { Social.Count: > 0 })
+            {
+                <ul class="site-footer__social">
+                    @foreach (var link in Site.Social)
+                    {
+                        <li>
+                            <a href="@link.Url" rel="noopener noreferrer" target="_blank">@link.Label</a>
+                        </li>
+                    }
+                </ul>
+            }
+
+            <p class="site-footer__copyright">
+                &copy; @DateTime.UtcNow.Year @(Site?.Name ?? "Maria Hescheles"). All rights reserved.
+            </p>
+        </div>
+
+    </div>
+</footer>
+
+@code {
+    [CascadingParameter]
+    private SiteContent? Site { get; set; }
+}

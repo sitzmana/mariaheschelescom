@@ -1,0 +1,95 @@
+@*
+    An image that cannot shift the layout.
+
+    Three things happen here, all of them about perceived quality:
+
+    1. The wrapper reserves the exact aspect ratio before any bytes arrive, so nothing below
+       the image ever jumps. This is the single largest contributor to a "solid" feeling site.
+    2. The reserved box is painted with a colour sampled from the photograph, so loading reads
+       as the image resolving rather than as a hole in the page.
+    3. The image fades in only once the browser confirms it decoded, which hides the
+       progressive-JPEG scan-line effect that otherwise looks cheap on large photographs.
+
+    Set Priority="true" on the single largest above-the-fold image — usually a page hero — and
+    nowhere else. Marking several images high-priority makes all of them slower.
+*@
+
+<figure class="@FigureClass" style="@FigureStyle">
+    <div class="media__frame">
+        <img class="media__img"
+             src="@Asset.Src"
+             srcset="@Asset.SrcSet"
+             sizes="@ResolvedSizes"
+             alt="@Asset.Alt"
+             width="@WidthAttribute"
+             height="@HeightAttribute"
+             loading="@(Priority ? "eager" : "lazy")"
+             decoding="@(Priority ? "sync" : "async")"
+             fetchpriority="@(Priority ? "high" : "auto")"
+             draggable="false"
+             @onload="OnLoaded" />
+    </div>
+
+    @if (ShowCaption && (Asset.Caption is not null || Asset.Credit is not null))
+    {
+        <figcaption class="media__caption">
+            @Asset.Caption
+            @if (Asset.Credit is not null)
+            {
+                <span class="media__credit">@Asset.Credit</span>
+            }
+        </figcaption>
+    }
+</figure>
+
+@code {
+    private bool _loaded;
+
+    [Parameter, EditorRequired]
+    public required MediaAsset Asset { get; set; }
+
+    /// <summary>
+    /// Marks this as the Largest Contentful Paint candidate: eager loading, high fetch
+    /// priority and synchronous decode. Use once per page at most.
+    /// </summary>
+    [Parameter]
+    public bool Priority { get; set; }
+
+    /// <summary>Renders the asset's caption and credit beneath the image.</summary>
+    [Parameter]
+    public bool ShowCaption { get; set; } = true;
+
+    /// <summary>
+    /// Overrides the asset's own <c>sizes</c> hint. Only meaningful when the asset supplies
+    /// a <c>srcset</c>.
+    /// </summary>
+    [Parameter]
+    public string? Sizes { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    private string FigureClass => $"media {(_loaded ? "is-loaded" : string.Empty)} {Class}".Trim();
+
+    private string ResolvedSizes => Sizes ?? Asset.Sizes ?? "100vw";
+
+    // Omitted rather than emitted as 0, which browsers treat as an explicit zero-size image.
+    private string? WidthAttribute => Asset.Width > 0 ? Asset.Width.ToString(CultureInfo.InvariantCulture) : null;
+
+    private string? HeightAttribute => Asset.Height > 0 ? Asset.Height.ToString(CultureInfo.InvariantCulture) : null;
+
+    private string FigureStyle
+    {
+        get
+        {
+            var ratio = Asset.AspectRatio.ToString("0.####", CultureInfo.InvariantCulture);
+            var placeholder = string.IsNullOrWhiteSpace(Asset.Placeholder)
+                ? "var(--color-surface)"
+                : Asset.Placeholder;
+
+            return $"--media-ratio:{ratio};--media-placeholder:{placeholder}";
+        }
+    }
+
+    private void OnLoaded() => _loaded = true;
+}

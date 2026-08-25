@@ -1,0 +1,52 @@
+@*
+    A section's eyebrow and heading, so the pairing stays typographically consistent
+    everywhere it appears.
+
+    `Level` exists because heading rank is a document-structure decision, not a styling one:
+    a section inside a page needs an <h2> even when it should look like an <h1>.
+*@
+
+<Reveal Variant="RevealVariant.Mask" Class="@($"section-heading {Class}".TrimEnd())">
+    @if (Eyebrow is not null)
+    {
+        <p class="section-heading__eyebrow">@Eyebrow</p>
+    }
+
+    @switch (Level)
+    {
+        case 1:
+            <h1 class="section-heading__title">@Title</h1>
+            break;
+        case 3:
+            <h3 class="section-heading__title">@Title</h3>
+            break;
+        default:
+            <h2 class="section-heading__title">@Title</h2>
+            break;
+    }
+
+    @if (Lead is not null)
+    {
+        <p class="section-heading__lead">@Lead</p>
+    }
+</Reveal>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Title { get; set; }
+
+    /// <summary>Small label above the heading.</summary>
+    [Parameter]
+    public string? Eyebrow { get; set; }
+
+    /// <summary>Optional standfirst paragraph below the heading.</summary>
+    [Parameter]
+    public string? Lead { get; set; }
+
+    /// <summary>Heading rank, 1 to 3. Exactly one heading per page should be rank 1.</summary>
+    [Parameter]
+    public int Level { get; set; } = 2;
+
+    [Parameter]
+    public string? Class { get; set; }
+}
