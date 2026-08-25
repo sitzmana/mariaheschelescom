@@ -3,8 +3,6 @@
   <PropertyGroup>
     <RootNamespace>MariaHescheles.Web</RootNamespace>
     <AssemblyName>MariaHescheles.Web</AssemblyName>
-    <!-- Lets the SDK inject fingerprinted asset URLs into index.html at publish time. -->
-    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
   </PropertyGroup>
 
   <PropertyGroup Label="Publish size and startup">

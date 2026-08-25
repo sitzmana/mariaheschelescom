@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Placeholder">
+  <!-- Stand-in artwork, 16:9. Used for full-bleed and cover imagery. -->
+  <rect width="1600" height="900" fill="#cfc6b4" />
+  <g fill="none" stroke="#a2998a" stroke-width="2">
+    <rect x="40" y="40" width="1520" height="820" />
+    <path d="M40 860 L560 380 L900 720 L1180 500 L1560 800" />
+  </g>
+  <circle cx="1280" cy="230" r="80" fill="#bcb2a0" />
+  <text x="800" y="470" text-anchor="middle" fill="#847c6c"
+        font-family="Iowan Old Style, Palatino Linotype, Georgia, serif" font-size="48">
+    Photograph
+  </text>
+  <text x="800" y="524" text-anchor="middle" fill="#a2998a"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="26" letter-spacing="3">
+    16 : 9
+  </text>
+</svg>

@@ -1,26 +1,34 @@
 /*
-    Web fonts.
+    Web fonts — currently disabled.
 
-    Both families are optional. The stacks in tokens.css begin with high-quality system
-    faces, so the site is fully and correctly typeset before these load — and remains so if
-    they are never added at all.
+    The stacks in tokens.css start with high-quality system faces (Iowan Old Style / Palatino /
+    Georgia for display, the platform UI sans for body), so the site is fully and correctly
+    typeset with no web fonts at all, and loads faster for it.
 
-    To self-host (recommended over a font CDN: no third-party request, no third-party
-    tracking, no extra DNS and TLS handshake on the critical path), download the variable
-    WOFF2 files and drop them in wwwroot/fonts/. See docs/design-system.md for the exact
-    files and licences. Both are SIL Open Font Licence.
+    To enable Fraunces and Inter:
 
-    `font-display: swap` is deliberate. The alternative, `optional`, would avoid the reflow
-    when the font arrives but frequently means visitors never see the intended typeface at
-    all — unacceptable on a site whose subject is design.
+      1. Download the variable WOFF2 files. Both are SIL Open Font Licence:
+           Fraunces  https://github.com/undercasetype/Fraunces   (fonts/variable/*.woff2)
+           Inter     https://github.com/rsms/inter/releases      (InterVariable.woff2)
+      2. Save as wwwroot/fonts/fraunces-variable.woff2 and wwwroot/fonts/inter-variable.woff2.
+      3. Remove the comment markers below.
+
+    Self-hosting rather than a font CDN is deliberate: no third-party request, no third-party
+    tracking, no extra DNS and TLS handshake on the critical path.
+
+    `font-display: swap` is right here over `optional`. It costs a reflow when the font lands,
+    but `optional` often means visitors never see the intended typeface at all — unacceptable
+    on a site whose subject is design.
+
+    These rules are commented out rather than left in place because @font-face with missing
+    files produces a 404 on every page load.
 */
 
+/*
 @font-face {
     font-family: 'Fraunces';
     src: url('../fonts/fraunces-variable.woff2') format('woff2-variations');
     font-weight: 300 700;
-    /* Fraunces ships optical sizing; letting the browser drive it keeps display sizes
-       elegant and small sizes legible from one file. */
     font-optical-sizing: auto;
     font-style: normal;
     font-display: swap;
@@ -33,3 +41,4 @@
     font-style: normal;
     font-display: swap;
 }
+*/

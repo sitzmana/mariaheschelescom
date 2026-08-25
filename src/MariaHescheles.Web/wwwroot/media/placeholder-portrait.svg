@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Placeholder">
+  <!-- Stand-in artwork, 4:5. Used for portraits and for objects, which photograph tall. -->
+  <rect width="800" height="1000" fill="#d2c9b7" />
+  <g fill="none" stroke="#a49a87" stroke-width="2">
+    <rect x="36" y="36" width="728" height="928" />
+    <path d="M36 964 L300 620 L520 840 L764 640" />
+  </g>
+  <circle cx="560" cy="250" r="64" fill="#c0b6a2" />
+  <text x="400" y="520" text-anchor="middle" fill="#867d6c"
+        font-family="Iowan Old Style, Palatino Linotype, Georgia, serif" font-size="40">
+    Photograph
+  </text>
+  <text x="400" y="570" text-anchor="middle" fill="#a49a87"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="22" letter-spacing="3">
+    4 : 5
+  </text>
+</svg>

@@ -21,32 +21,24 @@
     <meta property="og:title" content="Maria Hescheles — Interior Designer" />
     <meta property="og:description" content="Selected interior design work, documented room by room." />
     <meta property="og:url" content="https://mariahescheles.com/" />
-    <meta property="og:image" content="https://mariahescheles.com/media/social/home.jpg" />
+    <!--
+        og:image must be a raster file (JPG or PNG, ideally 1200x630) for Slack, LinkedIn,
+        iMessage and the rest to render a preview at all; they ignore SVG. Replace the
+        placeholder below, and the matching Image="..." values on each page, with a real one.
+    -->
+    <meta property="og:image" content="https://mariahescheles.com/media/placeholder-wide.svg" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <!--
-        Applied before the first paint, and therefore before WebAssembly has even started
-        downloading. Without this, a visitor on a dark-mode device gets a full-screen white
-        flash for the second or so it takes the runtime to boot. It is deliberately inline,
-        synchronous and dependency-free: an external file would be another round trip during
-        the exact window this is meant to protect.
+        Applies the colour scheme before the first paint, avoiding a white flash on dark-mode
+        devices while WebAssembly boots. Synchronous and un-deferred on purpose.
+
+        External rather than inline because the Content Security Policy forbids inline script.
+        See js/boot-theme.js.
     -->
-    <script>
-        (function () {
-            try {
-                var stored = localStorage.getItem('mh-theme');
-                var theme = (stored === 'light' || stored === 'dark')
-                    ? stored
-                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                document.documentElement.dataset.theme = theme;
-            } catch (e) {
-                // Storage blocked. The document default of light applies.
-            }
-        })();
-    </script>
+    <script src="js/boot-theme.js"></script>
 
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="media/icons/apple-touch-icon.png" />
     <link rel="manifest" href="site.webmanifest" />
     <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#121110" media="(prefers-color-scheme: dark)" />
@@ -57,10 +49,14 @@
         three.js is resolved through an import map so that `import 'three'` inside scene.js
         works with no bundler and no build step. The version is pinned here and nowhere else.
 
-        The library is only ever fetched when a visitor opens a 3D view: nothing on the
-        critical path references it. To remove the third-party dependency entirely, vendor
-        the files under wwwroot/lib/three/ and repoint these two entries — see
-        docs/motion-and-3d.md.
+        An import map has to be inline — external import maps are not broadly supported — so
+        the Content Security Policy allows this one block by its sha256 hash. That hash is
+        recomputed and verified by the deploy workflow, so editing the map without updating
+        staticwebapp.config.json fails the build instead of silently breaking 3D in production.
+
+        The library is only fetched when a visitor opens a 3D view; nothing on the critical
+        path references it. To drop the third-party dependency entirely, vendor the files under
+        wwwroot/lib/three/ and repoint these two entries.
     -->
     <script type="importmap">
     {
@@ -102,6 +98,15 @@
         <button type="button" class="dismiss" aria-label="Dismiss">&times;</button>
     </div>
 
+    <!--
+        The SDK ships this file content-fingerprinted (blazor.webassembly.<hash>.js). ASP.NET
+        Core hosting serves both names, but Static Web Apps serves plain files, so only the
+        fingerprinted one exists there and this reference would 404.
+
+        The deploy workflow therefore copies the fingerprinted file to this stable name after
+        publishing. Keep the plain name here: it is what the dev server serves, so local and
+        production stay identical.
+    -->
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 

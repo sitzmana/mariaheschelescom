@@ -49,6 +49,12 @@ jobs:
             exit 1
           fi
 
+      - name: Verify Content Security Policy hash
+        # The inline import map is allowed by sha256. Bumping the three.js version changes that
+        # hash, and the only symptom would be 3D silently failing in production — the dev server
+        # does not apply the CSP, so it cannot be caught locally by running the site.
+        run: python tools/csp_hash.py --check
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -66,13 +72,23 @@ jobs:
         run: dotnet publish ${{ env.PROJECT }} --configuration Release --no-build --output ${{ env.PUBLISH_DIR }}
 
       - name: Verify publish output
-        # Catches a path or layout change here, with a clear message, rather than letting it
-        # surface as an opaque directory error inside the deploy action.
+        # Static Web Apps serves plain files, so index.html must name files that physically
+        # exist. The SDK only emits blazor.webassembly.<hash>.js, so copy it to the stable name
+        # index.html references. Copying rather than renaming keeps the fingerprinted name
+        # valid for anything else that resolves it.
         run: |
-          test -f "${{ env.PUBLISH_DIR }}/wwwroot/index.html" \
-            || { echo "::error::index.html not found in ${{ env.PUBLISH_DIR }}/wwwroot"; exit 1; }
-          test -f "${{ env.PUBLISH_DIR }}/wwwroot/staticwebapp.config.json" \
+          root="${{ env.PUBLISH_DIR }}/wwwroot"
+          test -f "$root/index.html" || { echo "::error::index.html not found in $root"; exit 1; }
+          test -f "$root/staticwebapp.config.json" \
             || echo "::warning::staticwebapp.config.json missing; deep links and MIME types will not be configured"
+
+          if [ ! -f "$root/_framework/blazor.webassembly.js" ]; then
+            fingerprinted=$(find "$root/_framework" -maxdepth 1 -name 'blazor.webassembly.*.js' ! -name '*.br' ! -name '*.gz' | head -n 1)
+            test -n "$fingerprinted" \
+              || { echo "::error::No blazor.webassembly script found in $root/_framework"; exit 1; }
+            cp "$fingerprinted" "$root/_framework/blazor.webassembly.js"
+            echo "Copied $(basename "$fingerprinted") to blazor.webassembly.js"
+          fi
 
       - name: Deploy
         id: builddeploy

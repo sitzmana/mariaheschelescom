@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" role="img" aria-label="Placeholder">
+  <!--
+    Stand-in artwork, 3:2. Replace the JSON reference with a real photograph rather than
+    overwriting this file — it is shared by several entries.
+  -->
+  <rect width="1200" height="800" fill="#d8d1c4" />
+  <g fill="none" stroke="#a89f8d" stroke-width="2">
+    <rect x="40" y="40" width="1120" height="720" />
+    <path d="M40 760 L470 330 L760 620 L940 470 L1160 690" />
+  </g>
+  <circle cx="900" cy="220" r="70" fill="#c4bba7" />
+  <text x="600" y="420" text-anchor="middle" fill="#8a8271"
+        font-family="Iowan Old Style, Palatino Linotype, Georgia, serif" font-size="42">
+    Photograph
+  </text>
+  <text x="600" y="470" text-anchor="middle" fill="#a89f8d"
+        font-family="Segoe UI, system-ui, sans-serif" font-size="24" letter-spacing="3">
+    3 : 2
+  </text>
+</svg>
